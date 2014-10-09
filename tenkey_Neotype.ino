@@ -12,7 +12,8 @@ More detailed discription: arduinoMicropins.txt
 **********************************/
 //depends on an I2C multiplex driver 
 int HAPTICTIMING = 1400; //ms, haptic display durration, Future; user adjustable
-byte PWMintensity = 200; // Adjusts the intensity of the pwm
+byte PWMintensity = 100; // Adjusts the intensity of the pwm
+#define SERIALINTERFACE Serial // change depending on board
 
 /********Set-up outline ***********
 pagersUp() brings vibrating motor interface online
@@ -21,7 +22,8 @@ buttonUp() brings button polling intreface up
 void setup() 
 {
   pagersUp(); // hardware.ino
-  buttonUp(); // hardware.ino 
+  buttonUp(); // hardware.ino
+  SERIALINTERFACE.begin(9600);//start communication with bluefruit 
 }
 
 /********* Main Loop outline***********
@@ -29,6 +31,7 @@ void setup()
 *************************************/
 void loop() 
 {
+   mainLoop(chordSample());
 }
 
 /********** Main functions *************
@@ -160,7 +163,7 @@ void outputFilter(byte letter)
     case 156:break; //'pipe'
     case 157:break;	//'closebrack'
     case 158:break;	//'tilde'
-    default: Serial1.write(letter);//send ascii given no exception
+    default: SERIALINTERFACE.write(letter);//send ascii given no exception
   }
 }
 
@@ -245,9 +248,9 @@ void hapticAlpha()
   for(byte i=97;i<123;i++)
   {//interate through all the letters in the alphabet
     hapticMessage(i);//ask for a letter in the alphabet
-    Serial1.write(i);//write the letter
+    SERIALINTERFACE.write(i);//write the letter
     while(!hapticMessage()){;}//wait for the char to finish
-    Serial1.write(8);//remove letter
+    SERIALINTERFACE.write(8);//remove letter
   }
 }
 
@@ -260,12 +263,12 @@ void toast(char message[])
 
 void btMessage(char message[])
 {
-  for(int pos=0;message[pos];pos++){Serial1.write(message[pos]);}//print message
-}
+  for(int pos=0;message[pos];pos++){SERIALINTERFACE.write(message[pos]);}
+}//print message
 
 void rmMessage(char message[])
 {//remove a message
-  for(int i=0;message[i];i++){Serial1.write(8);}
+  for(int i=0;message[i];i++){SERIALINTERFACE.write(8);}
 }
 
 //----------------------haptic logic----------------------------

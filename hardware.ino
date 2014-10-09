@@ -6,7 +6,7 @@
 Adafruit_PWM pagers = Adafruit_PWM();
 
 //----------PINOUT DEFINITIONS-------------------
-byte buttons[] = { 2,3,4,5,6,7,8,9,10,11, };
+byte buttons[] = { 5,4,6,9,7,8,10,3,2,11, };
 // !! ---set the desired button pins here--- !!
 #define NUMBUTTONS sizeof(buttons)
 #define NUMPAGERS 8 // can use up to 16
@@ -35,10 +35,9 @@ void buttonUp()// it's cold out there
 void patternVibrate(byte pins, byte pwm)//
 {
   for (byte i=0; i<NUMPAGERS; i++) 
-  {
-    if (pins & (1 << i)) { pagers.setPWM( i, 0, pwm); }
-    // imagine incoming byte as an array of 8 bits, one for each pager
-    else                 { pagers.setPWM( i, pwm, 0); }
+  { // imagine incoming byte as an array of 8 bits, one for each pager
+    if (pins & (1 << i)) { pagers.setPWM( i, pwm, 0); }
+    else/*set pager off*/{ pagers.setPWM( i, 0, pwm);   }
   }
 }
 
