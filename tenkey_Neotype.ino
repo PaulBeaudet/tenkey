@@ -12,7 +12,7 @@ More detailed discription: arduinoMicropins.txt
 **********************************/
 //depends on an I2C multiplex driver 
 int HAPTICTIMING = 1400; //ms, haptic display durration, Future; user adjustable
-byte PWMintensity = 100; // Adjusts the intensity of the pwm
+int PWMintensity = 100; // Adjusts the intensity of the pwm
 #define SERIALINTERFACE Serial // change depending on board
 
 /********Set-up outline ***********
@@ -31,21 +31,33 @@ void setup()
 *************************************/
 void loop() 
 {
-   mainLoop(chordSample());
+   chordLoop(buttonSample());
+   pagerTesting();
 }
 
 /********** Main functions *************
 *************************************/
-void mainLoop(byte input)
+void pagerTesting()
+{
+  //testing capibilities of the adafruit shield soon
+  for(int i=0; i<8; i++)
+  {// for every pager
+    
+  }
+}
+
+void chordLoop(int input)
 {// mainloop is abstracted for testing purposes 
   byte actionableSample= patternToChar(input);// 0 parameter == reverse lookup
+  //?? mask out thumb keys for vibration?
   if(actionableSample){patternVibrate(input, PWMintensity);}
   //fire the assosiated pagers! given action
   else{patternVibrate(0, 0);}//otherwise be sure the pagers are off
   outputFilter(inputFilter(actionableSample));
   //further filter input to "human intents" pass to output handler
 }
-/*********Program Flow********
+
+/********* Conversion Program Flow *********************************
 buttonSample() get the state of the buttons: Depends on: hardware.h
 returns and byte where each bit is a button
 
@@ -54,26 +66,36 @@ patternToChar() turn the button sample into a represented character
   
 patternVibrate() drive pagers, pass a byte where each bit is a motor
 
+* Important note: Valid letter data is debounced, not individual keys
 inputFilter() debounce cumalitive input and detect holds
   holdFilter()
     
 outputFilter() 
 
-**********************************/
-//-----------braille checking and convertion----------------
+********ASCII KEY******** Letter debouncing and convertion *************/
+#define BACKSPACE 8 // output keys
+#define TAB_KEY 9
+#define SPACEBAR 32
+#define CARIAGE_RETURN 13
+#define LETTER_A 97
+#define LETTER_Z 122
+#define L_THUMB 256 // input data
+#define R_THUMB 512
+
 byte chordPatterns[] 
 { // each byte is a series of bits that make up a chord
   1,5,48,56,2,24,33,6,4,14,28,12,40,30,7,18,31,3,16,32,51,45,8,35,54,49,
 }; // array ordered as alphabet (a->1, b->5, ect)
 #define PATTERNSIZE sizeof(chordPatterns)
 
-byte patternToChar(byte base)
-{
-  if(base == 128){return 8;}//Express convertion: Backspace 
+byte patternToChar(int base) //returns the char value of a raw chord
+{// some convertions can explicitly imediately be returned 
+  if(base == L_THUMB){return BACKSPACE;} 
   // Backspace doubles as second level shift for special chars
-  if(base == 64){return 32;}//Express convertion: Space 
+  if(base == R_THUMB){return SPACEBAR;}
   // Space also doubles as the first shift in a chord
-  if(base == 63){return 13;}//Express convertion: Cariage return
+  if(base == 63){return CARIAGE_RETURN;}//combination: space + backspace
+  // ?? (R_THUMB | L_THUMB) ??
   
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping   
@@ -85,16 +107,16 @@ byte patternToChar(byte base)
       if (base & 64)//first level shift *combination with space
       {// 64 = 0100-0000 // if( 6th bit is fliped high )
         //if(lower shift, less than 10th result) {return corrisponding number}
-        if(i<10){return '0' + i;} //a-j cases (ascii numbers)
-        if(i<25){return 23 + i;}  //k-y cases ( !"#$%&'()*+'-./ )
-        if(i==26){break;}         //z case (unassigned)
+        if(i<10) {return '0' + i;} //a-j cases (ascii numbers)
+        if(i<25) {return 23 + i;}  //k-y cases ( !"#$%&'()*+'-./ )
+        if(i==26){break;}          //z case (unassigned)
       } 
       if (base & 128)//second level shift *combination with backspace
       {//128 = 1000-0000 // if(7th bit is high) 
-        if(i<7){return ':' + i;}//a-g cases ( :;<=>?@ )
-        if(i<13){return 84 + i;}//h-m cases ( [\]^_`  )
-        if(i<17){return 110 + i;}//n-q cases( {|}~    ) 
-        break;                   //other casses unassigned
+        if(i<7){return ':' + i;}  //a-g cases ( :;<=>?@ )
+        if(i<13){return 84 + i;}  //h-m cases ( [\]^_`  )
+        if(i<17){return 110 + i;} //n-q cases( {|}~    ) 
+        break;                    //other casses unassigned
       }
       return 'a' + i;
     }// return plain char based on possition in the array given no shift
@@ -104,7 +126,7 @@ byte patternToChar(byte base)
 
 byte charToPattern(byte letter)
 {
-  if(letter == 32){return 64;}//Express convertion: Space 
+  if(letter == SPACEBAR){return 64;}//Express convertion: Space 
   // Space also doubles as the first shift in a chord
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping
@@ -122,7 +144,7 @@ byte charToPattern(byte letter)
       {return chordPatterns[i] | 128;}
       // h-m cases  ([\]^_`  ), return 7th bit shift
     if ( letter > 122 && letter < 127 && letter == (110 + i) ) 
-    {return chordPatterns[i] | 128;}//n-q cases( {|}~   ), return 7th bit shift
+    {return chordPatterns[i] | 128;}//n-q cases( {|}~   )return 7th bit shift
   }
   return 0;
 }
@@ -169,7 +191,7 @@ void outputFilter(byte letter)
 
 byte spacerTimer(byte reset)
 {
-  #define DELAYTIME 1 //the delay time corisponds to action values
+    #define DELAYTIME 1 //the delay time corisponds to action values
     #define TIMESTARTED 0 // Denotes when each action starts
     #define SPACER 10 // ms
     static uint32_t timer[2] = {};// holds time started and delay time
@@ -214,137 +236,31 @@ byte inputFilter(byte input)
 **************************/
 
 byte holdFilter(byte input)
-{
-if( byte progress = spacerTimer(0) )//check the timer to see if a step has been
-{
+{// instantiate progress: set to current timing
+if( byte progress = spacerTimer(0) )
+  {// *V* hold logic *V*
     if(progress==2){return input;}//intial debounce
-    if(input == 8) //special cases 
-    { // if holding backspace do it quickly
-      if(progress > 31 && progress % 3 == 0 || progress % 12 == 0){return 8;} 
-      return 0; // terminate other possibilities
+    if(input == BACKSPACE)                //Backspace case: before debounce 
+    { // if holding more than X return when timeing is devisible by 3 or 12
+      if(progress > 31 && progress % 3 == 0 || progress % 12 == 0)
+      {return BACKSPACE;} 
+      return 0; // terminate outside backspace cases
     }
-    if(input == 32 )
+    if(input == SPACEBAR)
     {// space cases
-      if(progress == 40){return 9;}//hold for tab case
-      return 0; // terminate other possibilities
+      if(progress == 40){return TAB_KEY;}//hold for tab case
+      return 0; // terminate outside space cases
     }
     //---------------------8 or 32 terminate themselves   
-    if(progress==40){ return 8;}
+    if(progress==40){ return BACKSPACE;}
     //delete currently printed char in preperation for a caps //holdover
     if(input < 91){return 0;}//in special char cases, go no further
-    if(progress==60){return input-32;}//downshift subtract 32 to get caps
-    if(progress==90){return 8;}
+    if(progress==60){return input-SPACEBAR;}
+    //downshift subtract 32 to get caps
+    if(progress==90){return BACKSPACE;}
     //delete currently printed char in preperation for a special commands
-    if(progress==110){return input + 32;}
+    if(progress==110){return input + SPACEBAR;}
     //upshift turns various input into commands
-}
+  }
 return 0;//if the timer returns no action: typical case
-}
-
-//------------------------messaging functions----------------------------------
-
-void hapticAlpha()
-{
-  for(byte i=97;i<123;i++)
-  {//interate through all the letters in the alphabet
-    hapticMessage(i);//ask for a letter in the alphabet
-    SERIALINTERFACE.write(i);//write the letter
-    while(!hapticMessage()){;}//wait for the char to finish
-    SERIALINTERFACE.write(8);//remove letter
-  }
-}
-
-void toast(char message[])
-{// message the appears and disapears, just like "toast" in android
-  btMessage(message);//print the message
-  while(hapticMessage(message) != 128){;}//wait for haptic message to finish
-  rmMessage(message);// remove message
-}
-
-void btMessage(char message[])
-{
-  for(int pos=0;message[pos];pos++){SERIALINTERFACE.write(message[pos]);}
-}//print message
-
-void rmMessage(char message[])
-{//remove a message
-  for(int i=0;message[i];i++){SERIALINTERFACE.write(8);}
-}
-
-//----------------------haptic logic----------------------------
-boolean ptimeCheck(uint32_t durration)
-{//used for checking an setting timer
-  static uint32_t ptimer[2] = { };// create timer to modify
-  if(durration)
-  {
-    ptimer[1]=durration; //set durration
-    ptimer[0]=millis();  // note the time set
-  }
-  else if(millis() - ptimer[0] > ptimer[1])
-  {// if the durration has elapsed
-    return true;
-  }
-  return false;
-} 
-
-void hapticMessage(byte letter) // intializing function
-{ // set a letter to be "played"
-  ptimeCheck(HAPTICTIMING);
-  patternVibrate(charToPattern(letter), PWMintensity);
-}
-
-boolean hapticMessage() 
-{ // updating function; passing a string sets course of action
-  static boolean touchPause= 0;
-
-  if(ptimeCheck(0))
-  {//time to "display" a touch has elapsed
-    if(touchPause)
-    {//this case allows for a pause after "display"
-      touchPause=!touchPause;
-      return true;
-    }
-    else
-    {
-      touchPause=!touchPause;
-      patternVibrate(0, 0);//stop the message
-      ptimeCheck(HAPTICTIMING/2);
-    };
-  }
-  return false;
-}
-
-byte hapticMessage(char message[])
-{ //sending the message param set a course of action, no param executes
-  static byte possition = 0;
-  byte onLetter = message[possition];
-
-  if(!onLetter)
-  {
-    possition = 0;
-    while (!hapticMessage())
-    {//finish last "touch"
-      ; //figure out how to get rid of this pause latter
-    }
-    return 128;//signal the message is done
-  }
-  if (hapticMessage())//refresh display
-  {
-    hapticMessage(onLetter);
-    possition++;
-    return onLetter;
-  }
-  return 0;
-}
-
-boolean checkMatch(char input[], char target[])
-{
-  for(byte i=0;target[i];i++)
-  {
-    if(input[i]!=target[i])
-    {
-      return false;
-    }
-  }
-  return true;
 }
