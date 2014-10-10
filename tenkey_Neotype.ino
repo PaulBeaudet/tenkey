@@ -12,7 +12,6 @@ More detailed discription: arduinoMicropins.txt
 **********************************/
 //depends on an I2C multiplex driver 
 int HAPTICTIMING = 1400; //ms, haptic display durration, Future; user adjustable
-int PWMintensity = 100; // Adjusts the intensity of the pwm
 #define SERIALINTERFACE Serial // change depending on board
 
 /********Set-up outline ***********
@@ -32,29 +31,27 @@ void setup()
 void loop() 
 {
    chordLoop(buttonSample());
-   pagerTesting();
+   //if(buttonSample()){pagerTesting();}  
 }
 
 /********** Main functions *************
 *************************************/
-void pagerTesting()
-{
-  //testing capibilities of the adafruit shield soon
-  for(int i=0; i<8; i++)
-  {// for every pager
-    
-  }
-}
 
 void chordLoop(int input)
 {// mainloop is abstracted for testing purposes 
   byte actionableSample= patternToChar(input);// 0 parameter == reverse lookup
   //?? mask out thumb keys for vibration?
-  if(actionableSample){patternVibrate(input, PWMintensity);}
+  if(actionableSample){patternVibrate(input);}
   //fire the assosiated pagers! given action
-  else{patternVibrate(0, 0);}//otherwise be sure the pagers are off
+  else{patternVibrate(0);}//otherwise be sure the pagers are off
   outputFilter(inputFilter(actionableSample));
   //further filter input to "human intents" pass to output handler
+}
+
+void alignTool()
+{
+  if(int input = buttonSample()){patternVibrate(input);}
+  else{patternVibrate(0);}
 }
 
 /********* Conversion Program Flow *********************************
@@ -90,12 +87,11 @@ byte chordPatterns[]
 
 byte patternToChar(int base) //returns the char value of a raw chord
 {// some convertions can explicitly imediately be returned 
-  if(base == L_THUMB){return BACKSPACE;} 
-  // Backspace doubles as second level shift for special chars
-  if(base == R_THUMB){return SPACEBAR;}
-  // Space also doubles as the first shift in a chord
-  if(base == 63){return CARIAGE_RETURN;}//combination: space + backspace
-  // ?? (R_THUMB | L_THUMB) ??
+  if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars
+  if(base == R_THUMB){return SPACEBAR;}//also doubles: first shift in a chord
+  if(base == (R_THUMB | L_THUMB)){return CARIAGE_RETURN;}
+  //combination: space + backspace
+  // ?? (R_THUMB | L_THUMB) == 63 ??
   
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping   
