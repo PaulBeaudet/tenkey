@@ -46,7 +46,7 @@ boolean ptimeCheck(uint32_t durration)
 void hapticMessage(byte letter) // intializing function
 { // set a letter to be "played"
   ptimeCheck(HAPTICTIMING);
-  patternVibrate(charToPattern(letter), PWMintensity);
+  patternVibrate(charToPattern(letter));
 }
 
 boolean hapticMessage() 
@@ -63,7 +63,7 @@ boolean hapticMessage()
     else
     {
       touchPause=!touchPause;
-      patternVibrate(0, 0);//stop the message
+      patternVibrate(0);//stop the message
       ptimeCheck(HAPTICTIMING/2);
     };
   }
