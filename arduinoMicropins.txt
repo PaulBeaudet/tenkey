@@ -1,0 +1,190 @@
+Arduino Leo/Micro (ATMEGA32u4) pin-out capability for a haptic keyer
+Previously the Sparkcore had been use. Where as the core is
+A more capable device in terms of connectivity, the use of connectivity
+is limited in current development applications.
+
+The 32u4 can be loaded with the Arduino bootloader
+The IDE's libraries hold the distinct advantage of reliable
+wired HID emulation objects. 
+
+Much of the tail end of this document are personal notes
+
+QFN parts on the board?
+Or TSSOP? 
+
+************ Wireless ************************
+Wireless options increase time to set-up and cost. 
+Bluefruit-> $22
+Sparkcore-> $40
+LiPo------> $10 - 25
+Currant connectivity cost
+Wifi & BT-> $72  
+Necessary>  NO :for current development extra
+Expansion > YES :Bluefruit, simple value add if desired
+                :Sparkcore, optimal for future plans
+***************************************************
+
+**************Charge Controller ********************
+Powerboost500C    -> $16 w/ switch
+Unpopulated board -> $? would this make a difference besides time?
+Populated board   -> $ 
+Given wireless expandability is included this makes sense 
+******************************************************
+
+-> # <- expandability and testing options
+
+********Arduino Leonardo/Micro (ATMEGA32u4)*************
+
+*TYPE == Arduino pin-out*
+* PN is inaccurate to true pins
+PN|TYPE|PWM|AN|SPC|USE
+1 | D0 |   |in|RX |<- #PS/2 converter 
+2 | D1 |   |in|TX |-> Bluefruit, BT HID output
+3 | D2 |   |in|SDA|-> PWM Driver (0X40)
+4 | D3 |PWM|in|SCL|-> #Captouch  (OX29)
+5 | D4 |   |AN|   |BUTTON0 RTHUMB   <space>
+6 | D5 |PWM|  |   |Piazo Buzzer 
+7 | D6 |PWM|AN|   |
+8 | D7 |   |  |   |BLUEFRUIT reset  
+9 | D8 |   |AN|   |BUTTON1 LTHUMB   <Backspace>
+10| D9 |PWM|  |   |
+11| D10|PWM|AN|   |CHORD6 RPinky    <Implicit space>
+12| D11|PWM|  |   |
+13| D12|   |AN|   |CHORD7 LPinky    < Letter base "s" >
+14| D13|PWM|  |   |
+15| A0 |   |AN|   |CHORD0 RPointer  < Letter base "o" >
+16| A1 |   |AN|   |CHORD1 RMiddle   < Letter base "e" >
+17| A2 |   |AN|   |CHORD2 RRing     < Letter base "a" >
+18| A3 |   |AN|   |CHORD3 LPointer  < Letter base "t" >
+19| A4 |   |AN|   |CHORD4 LMiddle   < Letter base "h" >
+20| A5 |   |AN|   |CHORD5 LRing     < Letter base "w" >
+21|MISO|****************
+22|MOSI|SD CARD READER <Type Correction>
+23|SCK |****************
+24|SS  |
+
+Note on input: HIGH || LOW defines current button actuations
+Planned test: pseudo analog depression,
+Two to three steps/levels of button actuation 
+Would replace current hold functionality
+Custom keys will be made in this case
+
+********* PWM DRIVER (PCA9865) *********
+
+*PN chip pinout (TSSOP28)
+PN|TYPE |CALL  | PLACE
+06|PWM0 |PAGER0| LPinky
+07|PWM1 |PAGER1| LRing
+08|PWM2 |PAGER2| LMiddle
+09|PWM3 |PAGER3| LPointer
+10|PWM4 |PAGER4| RPointer
+11|PWM5 |PAGER5| RMiddle
+12|PWM6 |PAGER6| RRing
+13|PWM7 |PAGER7| RPinky
+15-22 --> 1*8 header #wearable test unit
+
+********Proposed chord Layout*****************
+Based on a 7 bit base
+Highest bit: Space 
+This will test if space feedback increases readability
+Braille keyer (Sparkcore) was based on a 6 bit based
+
+HX-ASCII & 0X-Represented byte
+     chord combination "ANOTHERS" layout
+           |
+           V 
+L |HX| bits-1010 |DEC|GRAM|S2 |S3
+a |61| 1000-0000 |128|UNI7|`
+b |62| 0000-1010 |10 |bi  |`
+c |63| 0001-0001 |17 |bi  |`
+d |64| 0101-0000 |80 |bi  |`
+e |65| 0000-0100 |4  |UNI2|`
+f |66| 0000-0110 |6  |bi  |`
+g |67| 0110-0000 |96 |bi  |`
+h |68| 0010-0000 |8  |UNI3|`
+i |69| 1010-0000 |160|bi  |`
+j |6A| 1100-0000 |192|bi  |`
+k |6B| 0000-0101 |5  |bi  |`
+l |6C| 0001-1000 |24 |bi  |`
+m |6D| 1001-1001 |153|Quad|`
+n |6E| 0011-1100 |64 |UNI6|`
+o |6F| 0000-1000 |32 |UNI5|`
+p |70| 0000-1100 |14 |bi  |`
+q |71| 0011-0000 |48 |bi  |`
+r |72| 0000-0110 |2  |UNI1|`
+s |73| 0000-0001 |1  |UNI0|`
+t |74| 0001-0000 |16 |UNI4|`
+u |75| 1000-0100 |130|bi  |`
+v |76| 1000-0001 |129|bi  |`
+w |77| 0100-0010 |66 |bi  |` 
+x |78| 0101-1010 |90 |Quad|`
+y |79| 0010-0100 |36 |bi  |`
+z |7A| 0011-1100 |98 |Quad|`
+
+S* space-bar
+EX* Expansion Mode
+
+"watches" layout ->"another" would be another attractive option
+Watches is a less common word but in comprises of many bi-grams of 
+common letters and provides a simple mnemonic for memorizing the
+layout
+********One Stroke words**********
+The combine uni-gram letter with space to create a one stroke word
+1  w-a-t-c-h-e-s-space     | Oct
+2      t   h e    the      | Quad
+3          h e    he       | tri
+4          h e s  she      | Quad
+5  w a t   h      what     | Pen
+6  w a         s  was      | tri
+7    a t   h      that     | tri
+8            e s  see      | tri
+9    a t          at       | tri  
+10 w         e    we       | tri 
+11   a         s  as       | tri
+12 w a t c h      watch    | hex
+13   a t c h      chat     | pent
+14 
+
+--> alternatively <-- 
+1  a-n-o-t-h-e-r-SPACE  |oct
+128a n           an     |tri
+3      o t h e r other  |hex
+4        t h e   the    |Quad
+5    n o         no     |tri-gram
+6  a     t h     that   |Quad
+7    n o t       not    |Quad
+8        t h e r there  |hex
+9  a n   t h     than   |pent
+10   n   t h e   then   |pent
+11         h e   he     |tri-gram
+12     o t h     though |Quad
+13 a     t       at     |tri-gram
+14     o t       to     |tri-gram
+15     o       r or     |tri-gram
+16 
+
+   a     t   e r rate   |pent
+     n   t   e   ten    |Quad
+   a n   t       tan    |Quad
+   a     t h     hat    |Quad
+   a n   t     r rant   |pent
+       o t h     hot    |Quad
+   a n         r ran    |Quad
+     n o t h     nothing|pent 
+     n o t   e   note   |pent   || tone  
+
+
+*******One stroke bi-grams ******
+s-w-h-t-o-e-a-space
+s   h
+  w h                               -> "c"
+s w
+    h t
+s     t  
+
+*******getting the most common first words notes********
+--7 bit combos to get the top 50--
+thebofa -result-> 10
+watches -result-> 10
+another -result-> 
+  
