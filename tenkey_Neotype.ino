@@ -30,24 +30,21 @@ void setup()
 *************************************/
 void loop() 
 {
-   //chordLoop(buttonSample());
+   chordLoop(buttonSample());
    //if(buttonSample()){pagerTesting();} 
-   alignTool(); 
+   //alignTool(); 
 }
 
 /********** Main functions *************
 *************************************/
 
 void chordLoop(int input)
-{// mainloop is abstracted for testing purposes 
-  byte actionableSample= patternToChar(input);// 0 parameter == reverse lookup
-  //?? mask out thumb keys for vibration?
-  if(actionableSample){patternVibrate(input);}
-  //fire the assosiated pagers! given action
-  else{patternVibrate(0);}//otherwise be sure the pagers are off
-  outputFilter(inputFilter(actionableSample));
-  //further filter input to "human intents" pass to output handler
-}
+{// main progam loop is abstracted here, so it can be switch with other test
+  byte actionableSample= patternToChar(input); //determine chord validity
+  if(actionableSample){patternVibrate(input);} //actuate pagers:if letters
+  else{patternVibrate(0);}                     //release:turn pagers off
+  outputFilter(inputFilter(actionableSample)); //final output interpertation
+}//            debounce -> check hold -> return ASCII:letter or action code
 
 void alignTool()
 {
@@ -88,7 +85,7 @@ byte chordPatterns[] // each byte is a series of bits that make up a chord
 { //a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
   128,  5, 48, 56,  4, 24, 33,  8,  3, 14, 28, 12, 40,
 //  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z, 
-   64, 32, 18, 31,  2, 16, 16, 51, 45,  5, 35, 54, 49,
+   64, 32, 18, 31,  2, 10, 16, 51, 45,  5, 35, 54, 49,
 }; // array ordered as alphabet (a->1, b->5, ect)
 #define PATTERNSIZE sizeof(chordPatterns)
 
@@ -101,19 +98,17 @@ byte patternToChar(int base) //returns the char value of a raw chord
   
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all asignments in key mapping   
-    if ( (base & (R_THUMB | L_THUMB)) == chordPatterns[i] ) 
-    {//mask out thumb to check for matching chord 
-      if ((base & 192) == 192){break;}//wtf??
-      //third level shift *combination holding space and backspace
-      if (base & 64)//first level shift *combination with space
-      {// 64 = 0100-0000 // if( 6th bit is fliped high )
+    if ( (base & 255) == word(chordPatterns[i]) ) 
+    {//mask out thumbs to check for matching chord 
+      if (base & R_THUMB)//first level shift *combination with space
+      {// 512 = 10-0000-0000 // if( 10th bit is fliped high )
         //if(lower shift, less than 10th result) {return corrisponding number}
         if(i<10) {return '0' + i;} //a-j cases (ascii numbers)
         if(i<25) {return 23 + i;}  //k-y cases ( !"#$%&'()*+'-./ )
         if(i==26){break;}          //z case (unassigned)
       } 
-      if (base & 128)//second level shift *combination with backspace
-      {//128 = 1000-0000 // if(7th bit is high) 
+      if (base & L_THUMB)//second level shift *combination with backspace
+      {// 256 = 01-0000-0000 // if(9th bit is high) 
         if(i<7){return ':' + i;}  //a-g cases ( :;<=>?@ )
         if(i<13){return 84 + i;}  //h-m cases ( [\]^_`  )
         if(i<17){return 110 + i;} //n-q cases( {|}~    ) 
