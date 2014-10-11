@@ -30,8 +30,9 @@ void setup()
 *************************************/
 void loop() 
 {
-   chordLoop(buttonSample());
-   //if(buttonSample()){pagerTesting();}  
+   //chordLoop(buttonSample());
+   //if(buttonSample()){pagerTesting();} 
+   alignTool(); 
 }
 
 /********** Main functions *************
@@ -79,9 +80,15 @@ outputFilter()
 #define L_THUMB 256 // input data
 #define R_THUMB 512
 
-byte chordPatterns[] 
+/*byte chordPatterns[] 
 { // each byte is a series of bits that make up a chord
   1,5,48,56,2,24,33,6,4,14,28,12,40,30,7,18,31,3,16,32,51,45,8,35,54,49,
+}; // array ordered as alphabet (a->1, b->5, ect)*/
+byte chordPatterns[] // each byte is a series of bits that make up a chord
+{ //a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
+  128,  5, 48, 56,  4, 24, 33,  8,  3, 14, 28, 12, 40,
+//  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z, 
+   64, 32, 18, 31,  2, 16, 16, 51, 45,  5, 35, 54, 49,
 }; // array ordered as alphabet (a->1, b->5, ect)
 #define PATTERNSIZE sizeof(chordPatterns)
 
@@ -90,15 +97,13 @@ byte patternToChar(int base) //returns the char value of a raw chord
   if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars
   if(base == R_THUMB){return SPACEBAR;}//also doubles: first shift in a chord
   if(base == (R_THUMB | L_THUMB)){return CARIAGE_RETURN;}
-  //combination: space + backspace
-  // ?? (R_THUMB | L_THUMB) == 63 ??
+  //combination: space + backspace == Enter
   
   for (byte i=0; i<PATTERNSIZE; i++)   
-  {// for all of the key mapping   
-    if ( (base & 63) == chordPatterns[i] ) 
-    {//patern match regardless most significant 2 bits 
-    // 63 = 0011-1111 // mask the 6th and 7th bit out
-      if ((base & 192) == 192){break;}
+  {// for all asignments in key mapping   
+    if ( (base & (R_THUMB | L_THUMB)) == chordPatterns[i] ) 
+    {//mask out thumb to check for matching chord 
+      if ((base & 192) == 192){break;}//wtf??
       //third level shift *combination holding space and backspace
       if (base & 64)//first level shift *combination with space
       {// 64 = 0100-0000 // if( 6th bit is fliped high )
