@@ -90,7 +90,7 @@ byte patternToChar(int base) //returns the char value of a raw chord
   
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all asignments in key mapping   
-    if ( (base & ~(R_THUMB | L_THUMB)) == word(chordPatterns[i]) ) 
+    if ( (base & ~(R_THUMB | L_THUMB)) == chordPatterns[i] ) 
     {//incoming chord ignoring thumbs     check for matching chord 
       if (base & R_THUMB)//first level shift *combination with space
       {// 512 = 10-0000-0000 // if( 10th bit is fliped high )
