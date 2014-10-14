@@ -4,10 +4,13 @@
 
 Adafruit_PWM pagers = Adafruit_PWM();
 
-int PWMintensity = 1000; // Adjusts the intensity of the pwm
+int PWMintensity = 4000; // Adjusts the intensity of the pwm
+//--------extras--------------
+#define BUZZER 11
+#define ADJUST_POT A1
 
 //----------PINOUT DEFINITIONS-------------------
-byte buttons[] = { 10,9,7,8,5,4,6,3,2,11 };// pin out oppisite to pagers
+byte buttons[] = { 10,9,7,8,5,4,6,3,2,A0 };// pin out oppisite to pagers
 // pins can be aligned in software: try to do it in hardware
 #define NUMBUTTONS sizeof(buttons) // up to 16 possible
 #define NUMPAGERS 8 // can use up to 16
@@ -30,8 +33,8 @@ void buttonUp()// it's cold out there, set up the buttons
 void patternVibrate(int pins)
 { //set state of all pagers in one function
   for (byte i=0; i<NUMPAGERS; i++) 
-  { // imagine incoming int as an array of 16 bits, one for each pager
-    if (pins & (1 << i)) { pagers.setPWM( i, PWMintensity, 0); }
+  { // incoming int set bit by bit: high bits: pagers need to be active
+    if (pins & (1 << i)) { pagers.setPWM( i, 0, PWMintensity); }
     else/*set pager off*/{ pagers.setPWM( i, 0, 0); }
   }
 }
