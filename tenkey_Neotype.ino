@@ -47,18 +47,6 @@ void chordLoop(int input)
   outputFilter(inputFilter(actionableSample)); //final output interpertation
 }//            debounce -> check hold -> return ASCII:letter or action code
 
-void releaseDebounce(int input)
-{
-  if(input){}
-  else{}
-}
-
-void alignTool()
-{
-  if(int input = buttonSample()){patternVibrate(input);}
-  else{patternVibrate(0);}
-}
-
 /********* Conversion Program Flow *********************************
 buttonSample() get the state of the buttons: Depends on: hardware.h
 returns and byte where each bit is a button
@@ -215,7 +203,7 @@ byte holdFilter(byte input)
 {// instantiate progress: set to current timing
 if( byte progress = spacerTimer(0) ) //timing.ino- returns 10mill intervals
   {// *V* hold logic *V*
-    if(progress==2){return input;}//intial debounce
+    if(progress==3){return input;}//intial debounce
     if(input == BACKSPACE)                //Backspace case: before debounce 
     { // if holding more than X return when timeing is devisible by 3 or 12
       if(progress > 31 && progress % 3 == 0 || progress % 12 == 0)
