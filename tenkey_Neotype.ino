@@ -75,9 +75,9 @@ outputFilter()
 //   --ANOTHERS-- layout a-n-o-t-h-e-r-s make up the homerow 
 byte chordPatterns[] // each byte is a series of bits that make up a chord
 { //a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
-  128, 10, 17, 80,  4,  6, 96,  8,160,192,  5, 24,153,
+  128, 10, 65, 80,  4,  6, 96,  8,160,192,  5, 24,153,
 //  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z, 
-   64, 32, 14, 48,  2,  1, 16,130,129, 66, 90, 36, 98,
+   64, 32, 12, 48,  2,  1, 16,132,129, 66, 90, 36, 60,
 }; // array ordered as alphabet (a->1, b->5, ect)
 #define PATTERNSIZE sizeof(chordPatterns)
 
@@ -203,7 +203,7 @@ byte holdFilter(byte input)
 {// instantiate progress: set to current timing
 if( byte progress = spacerTimer(0) ) //timing.ino- returns 10mill intervals
   {// *V* hold logic *V*
-    if(progress==3){return input;}//intial debounce
+    if(progress==2){return input;}//intial debounce
     if(input == BACKSPACE)                //Backspace case: before debounce 
     { // if holding more than X return when timeing is devisible by 3 or 12
       if(progress > 31 && progress % 3 == 0 || progress % 12 == 0)
