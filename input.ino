@@ -11,6 +11,20 @@ decide when to reset in -> inputFilter
 poll inside of ----------> homerow, backActions, spaceActions, chordActions
 *************************************************************/
 byte inputFilter(byte input)
+{ // prevent output from being the same as the last
+  static byte lastActuation = 0;
+  byte output = 0;
+  byte actuation = holdFilter(input);
+  if(actuation)//give an press action event
+  {// only allow it if it is differant then the last event
+    if (actuation != lastActuation){output = actuation;}
+    lastActuation = actuation; // note current press   
+  } // if the input is zero and enough time has elapsed reset the condition    
+  else if (!input && spacerTimer(0)>10){lastActuation = 0;}
+  return output; 
+}
+
+byte holdFilter(byte input)
 {
   static byte lastInput = 0;
   byte output = 0;// output defaults to zero
