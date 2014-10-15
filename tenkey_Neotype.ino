@@ -136,7 +136,7 @@ byte charToPattern(byte letter)
   }
   return 0;
 }
-// ----------------input interpertation-------------
+// ----------------output interpertation-------------
 
 void outputFilter(byte letter)
 {// long holds shift bytes up; the following switch covers special options
@@ -175,56 +175,4 @@ void outputFilter(byte letter)
     case 158:break;	//'tilde'
     default: SERIALINTERFACE.write(letter);//send ascii given no exception
   }
-}
-
-byte inputFilter(byte input)
-{//debounces input: interprets hold states for capitilization + other functions
-  static byte lastInput=0;//remembers last entry to debounce	
-    
-  if(input)//give something other than 0
-  {//Given values and the fact values are the same as the last
-    if(input == lastInput){return holdFilter(input);}
-    if(lastInput == 0){spacerTimer(1);}//fall through; reset for regular press
-  }
-  lastInput=input; // hold the place of the current value for next loop
-  return 0; // typical, no input case
-}
-
-/**************************
--HOLD FLOW-
-1. debounce- accept valid input
-2. Holdover- Remover char in preperation for upper cases
-3. Capitilize- print upper case chare
-4. Holdover- Remover char in preperation for special commands
-5. Special Cases- Programed 'command' cases for special features
-**************************/
-
-byte holdFilter(byte input)
-{// instantiate progress: set to current timing
-if( byte progress = spacerTimer(0) ) //timing.ino- returns 10mill intervals
-  {// *V* hold logic *V*
-    if(progress==2){return input;}//intial debounce
-    if(input == BACKSPACE)                //Backspace case: before debounce 
-    { // if holding more than X return when timeing is devisible by 3 or 12
-      if(progress > 31 && progress % 3 == 0 || progress % 12 == 0)
-      {return BACKSPACE;} 
-      return 0; // terminate outside backspace cases
-    }
-    if(input == SPACEBAR)
-    {// space cases
-      if(progress == 40){return TAB_KEY;}//hold for tab case
-      return 0; // terminate outside space cases
-    }
-    //---------------------8 or 32 terminate themselves   
-    if(progress==40){ return BACKSPACE;}
-    //delete currently printed char in preperation for a caps //holdover
-    if(input < 91){return 0;}//in special char cases, go no further
-    if(progress==60){return input-SPACEBAR;}
-    //downshift subtract 32 to get caps
-    if(progress==90){return BACKSPACE;}
-    //delete currently printed char in preperation for a special commands
-    if(progress==110){return input + SPACEBAR;}
-    //upshift turns various input into commands
-  }
-return 0;//if the timer returns no action: typical case
 }
