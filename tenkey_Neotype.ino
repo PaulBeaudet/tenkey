@@ -31,6 +31,7 @@ void setup()
 void loop() 
 {
    chordLoop(buttonSample());
+   adjustPWM();//checks a potentiometer to adjust pwm
    //if(buttonSample()){pagerTesting();} 
    //alignTool();
    //releaseDebounce(buttonSample()); 
@@ -158,7 +159,7 @@ void outputFilter(byte letter)
     case 141:break; //'m' Message; cat cache
     case 142:break; //'n' nyan
     case 143:break; //'o'
-    case 144:break; //'p'
+    case 144:potCheck();break; //'p'
     case 145:break; //'q'
     case 146:break; //'r'
     case 147:break; //'s' haptic display speed

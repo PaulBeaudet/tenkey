@@ -4,7 +4,7 @@
 
 Adafruit_PWM pagers = Adafruit_PWM();
 
-int PWMintensity = 4000; // Adjusts the intensity of the pwm
+int PWMintensity = 0; // Adjusts the intensity of the pwm
 //--------extras--------------
 #define BUZZER 11
 #define ADJUST_POT A1
@@ -18,7 +18,7 @@ byte buttons[] = { 10,9,7,8,5,4,6,3,2,A0 };// pin out oppisite to pagers
 void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
 {               // might not work when sharing the I2C bus
   pagers.begin();
-  pagers.setPWMFreq(PWMintensity);  // This is the maximum PWM frequency
+  pagers.setPWMFreq(1600);  // This is the maximum PWM frequency
   uint8_t twbrbackup = TWBR;// save I2C bitrate
   // must be changed after calling Wire.begin() (inside pwm.begin())
   TWBR = 12; // upgrade to 400KHz!   
@@ -49,22 +49,15 @@ int buttonSample()
   }//otherwise                          set the bit low
   return sample;
 }// returning and int, allows 16 possible buttons states to be combined
-
-void pagerTesting()
+//----------------adjusting pwm with pontentiometer---------
+void adjustPWM()
 {
-  //testing capibilities of the adafruit shield soon
-  for (int i=0; i<4096; i += 8) 
-  {
-    for (byte pwmnum=0; pwmnum < 8; pwmnum++) 
-    {
-      pagers.setPWM(pwmnum, 10, (i + (4096/16)*pwmnum) % 4096 );
-    }
-  }
-  for (int i=0; i<4096; i += 8) 
-  {
-    for (byte pwmnum=0; pwmnum < 8; pwmnum++) 
-    {
-      pagers.setPWM(pwmnum, 0, 0);
-    }
-  }
+  int potValue = analogRead(ADJUST_POT);
+  PWMintensity = map(potValue, 0, 1023, 0, 4095);
+}
+
+void potCheck()
+{
+  int potValue = analogRead(ADJUST_POT);
+  SERIALINTERFACE.print(potValue);
 }
