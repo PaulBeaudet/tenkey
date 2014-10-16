@@ -13,7 +13,7 @@ More detailed discription: arduinoMicropins.txt
 #include<avr/pgmspace.h>//explicitly stated read only memory
 //depends on an I2C multiplex driver 
 #define SERIALINTERFACE Serial // change depending on board
-int HAPTICTIMING = 1400; //ms, haptic display durration; user adjustable
+int HAPTICTIMING = 800; //ms, haptic display durration; user adjustable
 
 /********Set-up outline ***********
 pagersUp() brings vibrating motor interface online
@@ -33,10 +33,7 @@ void setup()
 void loop() 
 {
    chordLoop(buttonSample());
-   potentiometer(MONITOR_MODE);//checks a potentiometer to adjust pwm
-   //if(buttonSample()){pagerTesting();} 
-   //alignTool();
-   //releaseDebounce(buttonSample()); 
+   potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
 }
 
 /********** Main functions *************
@@ -81,9 +78,9 @@ char demoMessage[] = {"what does the fox say"};
 const byte chordPatterns[] PROGMEM =
 // each byte is a series of bits that make up a chord
 { //a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
-  128, 10, 65, 80,  4,  6, 96,  8,160,192,  5, 24,153,
+  128, 10,144, 80,  4,  6, 96,  8, 48,192,  5, 24, 60,
 //  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z, 
-   64, 32, 12, 48,  2,  1, 16,132,129, 66, 90, 36, 60,
+   64, 32,  3,  9,  2,  1, 16, 12,129, 66, 14, 36,112,
 }; // array ordered as alphabet (a->1, b->5, ect)
 #define PATTERNSIZE 26 //sizeof(chordPatterns)
 
