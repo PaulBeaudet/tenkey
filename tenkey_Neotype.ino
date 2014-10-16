@@ -10,6 +10,7 @@
 * 8 Pagers sit on top of the chord keys to be able to feed back letters
 More detailed discription: arduinoMicropins.txt 
 **********************************/
+#include<avr/pgmspace.h>//explicitly stated read only memory
 //depends on an I2C multiplex driver 
 int HAPTICTIMING = 1400; //ms, haptic display durration, Future; user adjustable
 #define SERIALINTERFACE Serial // change depending on board
@@ -74,13 +75,14 @@ outputFilter()
 #define R_THUMB 512
 
 //   --ANOTHERS-- layout a-n-o-t-h-e-r-s make up the homerow 
-byte chordPatterns[] // each byte is a series of bits that make up a chord
+const byte chordPatterns[] PROGMEM =
+// each byte is a series of bits that make up a chord
 { //a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
   128, 10, 65, 80,  4,  6, 96,  8,160,192,  5, 24,153,
 //  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z, 
    64, 32, 12, 48,  2,  1, 16,132,129, 66, 90, 36, 60,
 }; // array ordered as alphabet (a->1, b->5, ect)
-#define PATTERNSIZE sizeof(chordPatterns)
+#define PATTERNSIZE 26 //sizeof(chordPatterns)
 
 byte patternToChar(int base) //returns the char value of a raw chord
 {// some convertions can explicitly imediately be returned 
@@ -91,7 +93,7 @@ byte patternToChar(int base) //returns the char value of a raw chord
   
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all asignments in key mapping   
-    if ( (base & ~(R_THUMB | L_THUMB)) == chordPatterns[i] ) 
+    if ( (base & ~(R_THUMB | L_THUMB)) == pgm_read_byte(&chordPatterns[i])) 
     {//incoming chord ignoring thumbs     check for matching chord 
       if (base & R_THUMB)//first level shift *combination with space
       {// 512 = 10-0000-0000 // if( 10th bit is fliped high )
@@ -119,21 +121,23 @@ byte charToPattern(byte letter)
   // Space also doubles as the first shift in a chord
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping
-    if ( letter == ('a'+ i) ){return chordPatterns[i];}
+    if ( letter == ('a'+ i) ){return pgm_read_byte(&chordPatterns[i]);}
     //return typicall letter patterns
     if ( letter < 58 && letter == ('0' + i) ) 
-      {return chordPatterns[i] | 64;} 
+      {return pgm_read_byte(&chordPatterns[i]) | 64;} 
     // in numbers shift case return pattern with 6th bit shift
     if ( letter > 32 && letter < 48 && letter == (23 + i) ) 
-      {return chordPatterns[i] | 64;}
+      {return pgm_read_byte(&chordPatterns[i]) | 64;}
     //k-y cases ( !"#$%&'()*+'-./ )return 6th bit shift
-    if ( letter < 65 && letter == (':' + i) ) {return chordPatterns[i] | 128;}
+    if ( letter < 65 && letter == (':' + i) ) 
+    {return pgm_read_byte(&chordPatterns[i]) | 128;}
     //a-g cases  (:;<=>?@ ), return 7th bit shift
     if ( letter > 90 && letter < 97 && letter == (84 + i) ) 
-      {return chordPatterns[i] | 128;}
+      {return pgm_read_byte(&chordPatterns[i]) | 128;}
       // h-m cases  ([\]^_`  ), return 7th bit shift
     if ( letter > 122 && letter < 127 && letter == (110 + i) ) 
-    {return chordPatterns[i] | 128;}//n-q cases( {|}~   )return 7th bit shift
+    {return pgm_read_byte(&chordPatterns[i]) | 128;}
+    //n-q cases( {|}~   )return 7th bit shift
   }
   return 0;
 }
