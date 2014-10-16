@@ -74,6 +74,8 @@ outputFilter()
 #define L_THUMB 256 // input data
 #define R_THUMB 512
 
+char demoMessage[] = {"what does the fox say"};
+
 //   --ANOTHERS-- layout a-n-o-t-h-e-r-s make up the homerow 
 const byte chordPatterns[] PROGMEM =
 // each byte is a series of bits that make up a chord
@@ -117,7 +119,7 @@ byte patternToChar(int base) //returns the char value of a raw chord
 
 byte charToPattern(byte letter)
 {
-  if(letter == SPACEBAR){return 64;}//Express convertion: Space 
+  if(letter == SPACEBAR){return 0;}//Express convertion: Space 
   // Space also doubles as the first shift in a chord
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping
@@ -160,7 +162,7 @@ void outputFilter(byte letter)
     case 138:break;	//'j'
     case 139:break;	//'k'
     case 140:break;	//'l'
-    case 141:break; //'m' Message; cat cache
+    case 141:hapticTutor(demoMessage);break; //'m' Message; cat cache
     case 142:break; //'n' nyan
     case 143:break; //'o'
     case 144:potCheck();break; //'p'

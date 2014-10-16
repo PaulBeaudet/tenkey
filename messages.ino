@@ -1,4 +1,6 @@
-//--------------messaging functions-----------------------------
+/***********messages.ino **************************
+Fuctions involved in returning messages to the user
+**********messaging functions*********************/
 void hapticAlpha()
 {
   for(byte i=97;i<123;i++)
@@ -6,8 +8,19 @@ void hapticAlpha()
     hapticMessage(i);//ask for a letter in the alphabet
     SERIALINTERFACE.write(i);//write the letter
     while(!hapticMessage()){;}//wait for the char to finish
-    SERIALINTERFACE.write(8);//remove letter
+    SERIALINTERFACE.write(BACKSPACE);//remove letter
   }
+}
+
+void hapticTutor(char message[])
+{
+  for(int pos=0;message[pos];pos++)
+  {
+    hapticMessage(message[pos]);
+    SERIALINTERFACE.write(message[pos]);
+    while(!hapticMessage()){;}
+  }
+  rmMessage(message);
 }
 
 void toast(char message[])
@@ -24,7 +37,7 @@ void btMessage(char message[])
 
 void rmMessage(char message[])
 {//remove a message
-  for(int i=0;message[i];i++){SERIALINTERFACE.write(8);}
+  for(int i=0;message[i];i++){SERIALINTERFACE.write(BACKSPACE);}
 }
 
 //----------------------haptic logic----------------------------
