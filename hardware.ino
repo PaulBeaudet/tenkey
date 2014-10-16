@@ -49,15 +49,33 @@ int buttonSample()
   }//otherwise                          set the bit low
   return sample;
 }// returning and int, allows 16 possible buttons states to be combined
-//----------------adjusting pwm with pontentiometer---------
-void adjustPWM()
+//----------------adjusting settings with pontentiometer---------
+#define PWM_ADJUST 4
+#define TIMING_ADJUST 5
+void potentiometer(byte mode)
 {
+  static byte adjustMode = PWM_ADJUST;
   int potValue = analogRead(ADJUST_POT);
-  PWMintensity = map(potValue, 0, 1023, 0, 4095);
+  
+  if(mode == MONITOR_MODE){mode=adjustMode;}
+  //monitor mode; check to do adjustments 
+  switch(mode)// modes can check pot or switch modes
+  {
+    case CHECK_VALUE: potReturn(potValue); break;
+    case ADJUST_PWM://switch to pwm adjustment
+      adjustMode = PWM_ADJUST; potReturn(potValue);break;
+    case ADJUST_TIMING://switch to timing adjustment
+      adjustMode = TIMING_ADJUST; potReturn(potValue); break;
+    case PWM_ADJUST://mode that does adjusting 
+      PWMintensity = map(potValue, 0, 1023, 0, 4095); break;
+    case TIMING_ADJUST://mode that does adjusting
+      HAPTICTIMING = map(potValue, 0, 1023, 200, 2000); break; 
+  } 
 }
 
-void potCheck()
+void potReturn(int potValue)
 {
-  int potValue = analogRead(ADJUST_POT);
-  SERIALINTERFACE.print(potValue);
+  SERIALINTERFACE.print(map(potValue,0,1023,0,9));
+  delay(HAPTICTIMING); //give user time to see
+  SERIALINTERFACE.write(BACKSPACE);
 }

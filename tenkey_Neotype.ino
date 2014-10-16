@@ -12,8 +12,8 @@ More detailed discription: arduinoMicropins.txt
 **********************************/
 #include<avr/pgmspace.h>//explicitly stated read only memory
 //depends on an I2C multiplex driver 
-int HAPTICTIMING = 1400; //ms, haptic display durration, Future; user adjustable
 #define SERIALINTERFACE Serial // change depending on board
+int HAPTICTIMING = 1400; //ms, haptic display durration; user adjustable
 
 /********Set-up outline ***********
 pagersUp() brings vibrating motor interface online
@@ -29,10 +29,11 @@ void setup()
 /********* Main Loop outline***********
 
 *************************************/
+#define MONITOR_MODE 0
 void loop() 
 {
    chordLoop(buttonSample());
-   adjustPWM();//checks a potentiometer to adjust pwm
+   potentiometer(MONITOR_MODE);//checks a potentiometer to adjust pwm
    //if(buttonSample()){pagerTesting();} 
    //alignTool();
    //releaseDebounce(buttonSample()); 
@@ -144,6 +145,9 @@ byte charToPattern(byte letter)
   return 0;
 }
 // ----------------output interpertation-------------
+#define CHECK_VALUE   1
+#define ADJUST_PWM    2
+#define ADJUST_TIMING 3
 
 void outputFilter(byte letter)
 {// long holds shift bytes up; the following switch covers special options
@@ -158,17 +162,17 @@ void outputFilter(byte letter)
     case 134:break; //'f'
     case 135:break; //'g' game
     case 136:hapticAlpha();break;//'h' //hatically displays alphabet
-    case 137:break;	//'i' pwm intensity
+    case 137:potentiometer(ADJUST_PWM); break;	//'i' pwm intensity
     case 138:break;	//'j'
     case 139:break;	//'k'
     case 140:break;	//'l'
     case 141:hapticTutor(demoMessage);break; //'m' Message; cat cache
     case 142:break; //'n' nyan
     case 143:break; //'o'
-    case 144:potCheck();break; //'p'
+    case 144:potentiometer(CHECK_VALUE);break; //'p'
     case 145:break; //'q'
     case 146:break; //'r'
-    case 147:break; //'s' haptic display speed
+    case 147:potentiometer(ADJUST_TIMING);break; //'s' haptic display speed
     case 148:break; //'t' Transmit send cache
     case 149:break; //'u'
     case 150:break; //'v' varify 
