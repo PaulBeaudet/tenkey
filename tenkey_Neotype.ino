@@ -13,7 +13,7 @@ More detailed discription: arduinoMicropins.txt
 #include<avr/pgmspace.h>//explicitly stated read only memory
 //depends on an I2C multiplex driver 
 #define SERIALINTERFACE Serial // change depending on board
-int HAPTICTIMING = 800; //ms, haptic display durration; user adjustable
+int HAPTICTIMING = 300; //ms, haptic display durration; user adjustable
 
 /********Set-up outline ***********
 pagersUp() brings vibrating motor interface online
@@ -26,25 +26,33 @@ void setup()
   SERIALINTERFACE.begin(9600);//start communication with bluefruit 
 }
 
-/********* Main Loop outline***********
+/*************** Main Loop outline*********************
 
-*************************************/
-#define MONITOR_MODE 0
+************* Multi-use function MODES *****************/
+#define MONITOR_MODE      0
+#define START_INTERUPT    1 // removes output, zeros play point: messageHandlr
+#define CAT_OUT           2 // set message to play : messageHandlr
 void loop() 
 {
-   chordLoop(buttonSample());
+   byte isPressed = chordLoop(buttonSample());//<--important part
+   // captures the current state of the buttons
+   listenForMessage();// grab potential messages over serial
    potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
+   messageHandlr(isPressed);//async message mangment - interupt with keystroke
 }
 
 /********** Main functions *************
 *************************************/
 
-void chordLoop(int input)
+byte chordLoop(int input) // takes sample of buttons: returns true for press
 {// main progam loop is abstracted here, so it can be switch with other test
   byte actionableSample= patternToChar(input); //determine chord validity
   if(actionableSample){patternVibrate(input);} //actuate pagers:if letters
-  else{patternVibrate(0);}                     //release:turn pagers off
-  outputFilter(inputFilter(actionableSample)); //final output interpertation
+  //else{patternVibrate(0);}                     //release:turn pagers off
+  byte filteredInput = inputFilter(actionableSample);
+  if(filteredInput == 0){return 0;}            //invalid input case
+  outputFilter(filteredInput); if(filteredInput==130){return 0;}//exception
+  return 1;       //valid output case 
 }//            debounce -> check hold -> return ASCII:letter or action code
 
 /********* Conversion Program Flow *********************************
@@ -152,18 +160,18 @@ void outputFilter(byte letter)
   { // execute special compand basd on long hold
     case 0: return;//typical case; move on
     case 129:break; //'a'
-    case 130:break; //'b'
+    case 130:messageHandlr(CAT_OUT); break; //'b'
     case 131:break; //'c' copy; cache message
     case 132:break; //'d'
     case 133:break; //'e' Enter; confirm
     case 134:break; //'f'
     case 135:break; //'g' game
-    case 136:hapticAlpha();break;//'h' //hatically displays alphabet
+    case 136:break;//'h' //hatically displays alphabet
     case 137:potentiometer(ADJUST_PWM); break;	//'i' pwm intensity
     case 138:break;	//'j'
     case 139:break;	//'k'
     case 140:break;	//'l'
-    case 141:hapticTutor(demoMessage);break; //'m' Message; cat cache
+    case 141:break; //'m' Message; cat cache
     case 142:break; //'n' nyan
     case 143:break; //'o'
     case 144:potentiometer(CHECK_VALUE);break; //'p'
