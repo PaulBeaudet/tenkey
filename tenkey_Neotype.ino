@@ -8,27 +8,19 @@
 * Adafruit_PWMServoDriver shield drives 8 pager moters
 * ten keys take a input, 8 of which register chords
 * 8 Pagers sit on top of the chord keys to be able to feed back letters
+* depends on an adafruit I2C multiplex driver
 More detailed discription: arduinoMicropins.txt 
 **********************************/
 #include<avr/pgmspace.h>//explicitly stated read only memory
-//depends on an I2C multiplex driver 
-#define SERIALINTERFACE Serial // change depending on board
-int HAPTICTIMING = 300; //ms, haptic display durration; user adjustable
 
-/********Set-up outline ***********
-pagersUp() brings vibrating motor interface online
-buttonUp() brings button polling intreface up
-*********************************/
-void setup() 
+void setup()//setup the needed hardware  
 {
-  pagersUp(); // hardware.ino
-  buttonUp(); // hardware.ino
-  SERIALINTERFACE.begin(9600);//start communication with bluefruit 
+  pagersUp();          // hardware.ino: brings vibrating motor interface up
+  buttonUp();          // hardware.ino: brings button polling intreface up
+  serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
 }
 
-/*************** Main Loop outline*********************
-
-************* Multi-use function MODES *****************/
+/************* MAIN *****************/
 #define MONITOR_MODE      0
 #define START_INTERUPT    1 // removes output, zeros play point: messageHandlr
 #define CAT_OUT           2 // set message to play : messageHandlr
@@ -43,7 +35,6 @@ void loop()
 
 /********** Main functions *************
 *************************************/
-
 byte chordLoop(int input) // takes sample of buttons: returns true for press
 {// main progam loop is abstracted here, so it can be switch with other test
   byte actionableSample= patternToChar(input); //determine chord validity
@@ -79,8 +70,6 @@ outputFilter()
 #define LETTER_Z 122
 #define L_THUMB 256 // input data
 #define R_THUMB 512
-
-char demoMessage[] = {"what does the fox say"};
 
 //   --ANOTHERS-- layout a-n-o-t-h-e-r-s make up the homerow 
 const byte chordPatterns[] PROGMEM =
@@ -189,6 +178,6 @@ void outputFilter(byte letter)
     case 156:break; //'pipe'
     case 157:break;	//'closebrack'
     case 158:break;	//'tilde'
-    default: SERIALINTERFACE.write(letter);//send ascii given no exception
+    default: keyOut(letter);//send ascii given no exception
   }
 }

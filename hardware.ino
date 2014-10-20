@@ -2,19 +2,35 @@
 #include <Wire.h>
 #include "Adafruit_PWM.h"
 
+//below is platform choice, comment in if using, out if not using
+#define LEO // Arduinos using the ATMEGA32u4 as the chip
+//#define UNO   // Arduinos using the 328p
+//!!comment in one or the other, determines pre-compiled conditions !!
+
 Adafruit_PWM pagers = Adafruit_PWM();
 
+//global variables that need a home..
 int PWMintensity = 0; // Adjusts the intensity of the pwm
-//--------extras--------------
+int HAPTICTIMING = 300; //ms, haptic display durration; user adjustable
+//--------expermental hardware--------------
 #define BUZZER 11
 #define ADJUST_POT A1
 
 //----------PINOUT DEFINITIONS-------------------
-byte buttons[] = { 10,9,7,8,5,4,6,3,2,A0 };// pin out oppisite to pagers
+byte buttons[] = { 10,9,7,8,5,4,6,A3,A2,A0 };// pin out oppisite to pagers
 // pins can be aligned in software: try to do it in hardware
 #define NUMBUTTONS sizeof(buttons) // up to 16 possible
 #define NUMPAGERS 8 // can use up to 16
 //------------HARDWARE SETUP --------------------------
+void serialInterfaceUp()
+{// all three interfaces are brought up in the ATMEGA32u4 case
+  Serial.begin(9600);// serial on uno: bluefruit/message in LEO: message in
+  #if defined LEO // in leo case bluefruit is serial1
+    Keyboard.begin(); //begin wired via usb keyboard
+    Serial1.begin(9600);
+  #endif
+}
+
 void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
 {               // might not work when sharing the I2C bus
   pagers.begin();
@@ -29,7 +45,9 @@ void buttonUp()// it's cold out there, set up the buttons
   for (byte set=0;set<NUMBUTTONS;set++){ pinMode(buttons[set], INPUT_PULLUP);}
 }//pull-up -> 20k 5v rail| Pin-> button -> ground:reads low pressed
 
-//-------------- actuating pagers---------------
+/*********** Harware Functions ************
+
+********** actuating pagers***************/
 void patternVibrate(int pins)
 { //set state of all pagers in one function
   for (byte i=0; i<NUMPAGERS; i++) 
@@ -37,6 +55,29 @@ void patternVibrate(int pins)
     if (pins & (1 << i)) { pagers.setPWM( i, 0, PWMintensity); }
     else/*set pager off*/{ pagers.setPWM( i, 0, 0); }
   }
+}
+//-------------Writing keys to host----------
+void keyOut(byte keyPress)
+{
+  #if defined UNO
+     Serial.write(keyPress); // serves both bluefruit and serial port
+  #endif
+  #if defined LEO // in the case of using the ATMEGA32u4 write both interfaces
+     Serial1.write(keyPress);
+     if(keyPress==CARIAGE_RETURN){keyPress=KEY_RETURN;}
+     Keyboard.write(keyPress);
+  #endif
+}
+
+void keyPrint(byte message)
+{
+  #if defined UNO
+     Serial.print(message); // serves both bluefruit and serial port
+  #endif
+  #if defined LEO // in the case of using the ATMEGA32u4 write both interfaces
+     Serial1.print(message);
+     Keyboard.print(message);
+  #endif
 }
 //---------------Sampling buttons-------------
 int buttonSample()
@@ -75,7 +116,7 @@ void potentiometer(byte mode)
 
 void potReturn(int potValue)
 {
-  SERIALINTERFACE.print(map(potValue,0,1023,0,9));
+  keyPrint(map(potValue,0,1023,0,9));
   delay(HAPTICTIMING); //give user time to see
-  SERIALINTERFACE.write(BACKSPACE);
+  keyOut(BACKSPACE);
 }

@@ -35,7 +35,7 @@ void messageHandlr(byte mode)
         if(hapticMessage(MONITOR_MODE))//<---Updates Letter display
         {//true == single letter display finished   
           hapticMessage(buffer[pos]);       //start next letter vib
-          SERIALINTERFACE.write(buffer[pos]);//tx next letter
+          keyOut(buffer[pos]);//tx next letter
           pos++;//increment read possition
         }//false == waiting -> return -> continue main loop
       }//playFlag false == no directive to play ->continue main loop
@@ -51,7 +51,7 @@ void messageHandlr(byte mode)
     case CAT_OUT:
       playFlag = 1;
       hapticMessage(buffer[pos]);
-      SERIALINTERFACE.write(buffer[pos]);
+      keyOut(buffer[pos]);
       pos++;
       return;
     default://SPACE-Z cases concat into buffer
@@ -67,9 +67,9 @@ Serial receive message
 ************************************************/
 void listenForMessage()
 { 
-  while(SERIALINTERFACE.available())
+  while(Serial.available())
   {
-    char singleLetter = (char)SERIALINTERFACE.read();
+    char singleLetter = (char)Serial.read();
     messageHandlr(singleLetter);//fills up the handlr's buffer
     if(singleLetter == NEW_LINE)
     {
@@ -83,17 +83,17 @@ void listenForMessage()
 
 void btMessage(char message[])
 {
-  for(int pos=0;message[pos];pos++){SERIALINTERFACE.write(message[pos]);}
+  for(int pos=0;message[pos];pos++){keyOut(message[pos]);}
 }//print message
 
 void rmMessage(char message[])
 {//remove a message
-  for(int i=0;message[i];i++){SERIALINTERFACE.write(BACKSPACE);}
+  for(int i=0;message[i];i++){keyOut(BACKSPACE);}
 }
 
 void removeThisMany(int numberOfChars)
 {//remove a numberOfChars...
-  for(int i=0;i<numberOfChars;i++){SERIALINTERFACE.write(BACKSPACE);}
+  for(int i=0;i<numberOfChars;i++){keyOut(BACKSPACE);}
 }
 
 //************lower level haptic logic***************
