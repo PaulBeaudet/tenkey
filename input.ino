@@ -12,15 +12,18 @@ poll inside of ----------> homerow, backActions, spaceActions, chordActions
 *************************************************************/
 byte inputFilter(byte input)
 { // prevent output from being the same as the last
-  static byte lastActuation = 0;
+  static byte lastEvent = 0;
   byte output = 0;
-  byte actuation = holdFilter(input);
-  if(actuation)//give an press action event
+  
+  if(byte event = holdFilter(input))// was there an event?
   {// only allow it if it is differant then the last event
-    if (actuation != lastActuation){output = actuation;}
-    lastActuation = actuation; // note current press   
-  } // if the input is zero and enough time has elapsed reset the condition    
-  else if (!input && spacerTimer(0)>10){lastActuation = 0;}
+    if (event != lastEvent){output = event;} // exclude bounce clicks
+    else if(event == BACKSPACE){output = event;} // include hold doubles
+    //so it is the same? and it been held for more than 30ms? go for it
+    lastEvent = event; // note current event for next check
+  } // if the input is zero and enough time has elapsed reset the condition
+  else if (!input && spacerTimer(0)>10) // timer counts pause time too
+  {lastEvent = 0;}//button has been let go long enough to discount odd stuff
   return output; 
 }
 
@@ -96,9 +99,7 @@ byte homerow(byte input, byte progress)
 
 byte backActions(byte progress)
 {// if holding more than X return when timeing is devisible by 3 or 12
-  if(progress == 2){return BACKSPACE;} 
-  if(progress > 31 && progress % 3 == 0 || progress % 12 == 0)
-  {return BACKSPACE;} 
+  if(progress == 5 || progress > 30 && progress % 3 == 0){return BACKSPACE;} 
   return 0; // terminate outside backspace cases
 }
 
