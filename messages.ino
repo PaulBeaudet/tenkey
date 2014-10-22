@@ -2,7 +2,7 @@
 Fuctions involved in returning messages to the user
 Message handeling flow
 messageHandlr() has two types of call, an istantiation and matianance
-0-fill global message buffer -> static in handeler  <--\
+0-fill global message lineBuffer -> static in handeler  <--\
 1-intiate message playing flag -> static in handler <---\- one time
  Note: new message and letters intrerupt presenting issues of placekeeping
  new letter will interupt message: as message is still in buffer
@@ -17,7 +17,7 @@ messageHandlr() has two types of call, an istantiation and matianance
 
 void messageHandlr(byte mode)
 {
-  static byte buffer[BUFFER_SIZE]={};
+  static byte lineBuffer[BUFFER_SIZE]={};
   static byte pos = 0; // in this way buffer can be no greater than 255
   static boolean playFlag = 0;
   
@@ -26,7 +26,7 @@ void messageHandlr(byte mode)
     case MONITOR_MODE:
       if(playFlag)
       {
-        if(buffer[pos]==NEW_LINE)
+        if(lineBuffer[pos]==NEW_LINE)
         {// Check for end case before updating further
           removeThisMany(pos);//backspace printed chars
           playFlag=0; pos = 0;//reset possition and playflag
@@ -34,8 +34,8 @@ void messageHandlr(byte mode)
         }// END CASE: MESSAGE HAS BEEN PRINTED AND REMOVED
         if(hapticMessage(MONITOR_MODE))//<---Updates Letter display
         {//true == single letter display finished   
-          hapticMessage(buffer[pos]);       //start next letter vib
-          keyOut(buffer[pos]);//tx next letter
+          hapticMessage(lineBuffer[pos]);       //start next letter vib
+          keyOut(lineBuffer[pos]);//tx next letter
           pos++;//increment read possition
         }//false == waiting -> return -> continue main loop
       }//playFlag false == no directive to play ->continue main loop
@@ -50,12 +50,12 @@ void messageHandlr(byte mode)
       return; 
     case CAT_OUT:
       playFlag = 1;
-      hapticMessage(buffer[pos]);
-      keyOut(buffer[pos]);
+      hapticMessage(lineBuffer[pos]);
+      keyOut(lineBuffer[pos]);
       pos++;
       return;
     default://SPACE-Z cases concat into buffer
-      buffer[pos] = mode; // assign incoming char to buffer
+      lineBuffer[pos] = mode; // assign incoming char to buffer
       if (mode == NEW_LINE){pos = 0;}//done recieving: zero possition
       else {pos++;} // increment write possition for more chars
       if(pos==BUFFER_SIZE){pos--;}//just take the head till the new line
@@ -70,7 +70,7 @@ void listenForMessage()
   while(Serial.available())
   {
     char singleLetter = (char)Serial.read();
-    messageHandlr(singleLetter);//fills up the handlr's buffer
+    messageHandlr(singleLetter);//fills up the handlr's lineBuffer
     if(singleLetter == NEW_LINE)
     {
       messageHandlr(START_INTERUPT);//In the middle of something? don't care
@@ -81,14 +81,11 @@ void listenForMessage()
 }
 //****************Output Functions ****************************
 
-void btMessage(char message[])
+void alphaHint()
 {
-  for(int pos=0;message[pos];pos++){keyOut(message[pos]);}
-}//print message
-
-void rmMessage(char message[])
-{//remove a message
-  for(int i=0;message[i];i++){keyOut(BACKSPACE);}
+  for(byte i=97;i<123;i++){messageHandlr(i);} // for all the letters
+  messageHandlr(NEW_LINE);//need to know where the end of the statement is
+  messageHandlr(CAT_OUT);//mee-oow! tell it to play the message
 }
 
 void removeThisMany(int numberOfChars)
