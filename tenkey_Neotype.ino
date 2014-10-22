@@ -18,6 +18,7 @@ void setup()//setup the needed hardware
   pagersUp();          // hardware.ino: brings vibrating motor interface up
   buttonUp();          // hardware.ino: brings button polling intreface up
   serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
+  delay(6600);         // wait for the yun to stop interfering.. suposedly
 }
 
 /************* MAIN *****************/
