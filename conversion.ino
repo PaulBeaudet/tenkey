@@ -44,16 +44,11 @@ byte patternToChar(int base) //returns the char value of a raw chord
       if (base & R_THUMB)//first level shift *combination with space
       {// 512 = 10-0000-0000 // if( 10th bit is fliped high )
         //if(lower shift, less than 10th result) {return corrisponding number}
-        if(i<10) {return '0' + i;} //a-j cases (ascii numbers)
-        if(i<25) {return 23 + i;}  //k-y cases ( !"#$%&'()*+'-./ )
-        if(i==26){break;}          //z case (unassigned)
+        return spaceParody(i);//convert letters to special characters
       } 
       if (base & L_THUMB)//second level shift *combination with backspace
       {// 256 = 01-0000-0000 // if(9th bit is high) 
-        if(i<7){return ':' + i;}  //a-g cases ( :;<=>?@ )
-        if(i<13){return 84 + i;}  //h-m cases ( [\]^_`  )
-        if(i<17){return 110 + i;} //n-q cases( {|}~    ) 
-        break;                    //other casses unassigned
+        return backParody(i);
       }
       return 'a' + i;
     }// return plain char based on possition in the array given no shift
@@ -61,29 +56,85 @@ byte patternToChar(int base) //returns the char value of a raw chord
   return 0;
 }
 
+byte spaceParody(byte letterPos)
+{//second level space chords AKA space + a,b,c,d ext
+  switch(letterPos)
+  {
+    case 0:  return '@';//a
+    case 1:  return '{';//b
+    case 2:  return '}';//c -> maybe carot with auto closing brackets
+    case 3:  return '$';//d
+    case 4:  return '-';//e
+    case 5:  return 47 ;//f -> forward slash
+    case 6:  return 38 ;//g -> ampersand
+    case 7:  return 39 ;//h -> single quote
+    case 8:  return '#';//i
+    case 9:  return '(';//j
+    case 10: return ')';//k -> maybe tilde with type correction
+    case 11: return '[';//l
+    case 12: return ']';//m -> maybe apostorpy with type correction
+    case 13: return '?';//n
+    case 14: return '!';//o
+    case 15: return '.';//p
+    case 16: return '=';//q
+    case 17: return '"';//r
+    case 18: return 92 ;//s ->slash 
+    case 19: return ',';//t ->comma
+    case 20: return '_';//u
+    case 21: return '<';//v
+    case 22: return '>';//w
+    case 23: return '*';//x
+    case 24: return '|';//y
+    case 25: return '+';//z which leaves (~ ` ^ % ;:) leftover
+  }
+}
+
+byte backParody(byte letterPos)
+{//second level back chords: AKA back + a,b,c,d ext
+  switch(letterPos)
+  {
+    case 0: return '`';//a
+    case 1://b
+    case 2: return ':';//c
+    case 3://d
+    case 4://e
+    case 5://f
+    case 6://g
+    case 7://h
+    case 8://i
+    case 9://j
+    case 10://k
+    case 11://l
+    case 12://m
+    case 13://n
+    case 14://o
+    case 15: return '%';//p
+    case 16://q
+    case 17://r
+    case 18: return ';';//s
+    case 19: return '~';//t
+    case 20://u
+    case 21: return '^';//v
+    case 22://w
+    case 23://x
+    case 24://y
+    case 25: return 0;//z //no cases for now
+  }
+}
+
 byte charToPattern(byte letter)
 {
   if(letter == SPACEBAR){return 0;}//Express convertion: Space 
+  //skip space for now, maybe animate a signal in the future
   // Space also doubles as the first shift in a chord
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping
     if ( letter == ('a'+ i) ){return pgm_read_byte(&chordPatterns[i]);}
     //return typicall letter patterns
-    if ( letter < 58 && letter == ('0' + i) ) 
-      {return pgm_read_byte(&chordPatterns[i]) | 64;} 
-    // in numbers shift case return pattern with 6th bit shift
-    if ( letter > 32 && letter < 48 && letter == (23 + i) ) 
-      {return pgm_read_byte(&chordPatterns[i]) | 64;}
-    //k-y cases ( !"#$%&'()*+'-./ )return 6th bit shift
-    if ( letter < 65 && letter == (':' + i) ) 
-    {return pgm_read_byte(&chordPatterns[i]) | 128;}
-    //a-g cases  (:;<=>?@ ), return 7th bit shift
-    if ( letter > 90 && letter < 97 && letter == (84 + i) ) 
-      {return pgm_read_byte(&chordPatterns[i]) | 128;}
-      // h-m cases  ([\]^_`  ), return 7th bit shift
-    if ( letter > 122 && letter < 127 && letter == (110 + i) ) 
-    {return pgm_read_byte(&chordPatterns[i]) | 128;}
-    //n-q cases( {|}~   )return 7th bit shift
+    if ( letter == spaceParody(i)) {return pgm_read_byte(&chordPatterns[i]);}
+    // space chord combination cases = special characters
+    if ( letter == backParody(i)) {return pgm_read_byte(&chordPatterns[i]);}
+    // back chord combination cases 
   }
   return 0;
 }
