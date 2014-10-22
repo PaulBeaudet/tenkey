@@ -44,7 +44,8 @@ byte chordLoop(int input) // takes sample of buttons: returns true for press
   //else{patternVibrate(0);}                     //release:turn pagers off
   byte filteredInput = inputFilter(actionableSample);
   if(filteredInput == 0){return 0;}            //invalid input case
-  outputFilter(filteredInput); if(filteredInput==130){return 0;}//exception
+  outputFilter(filteredInput); 
+  if(filteredInput > 128){return 0;}//exclude special functions
   return 1;       //valid output case 
 }//            debounce -> check hold -> return ASCII:letter or action code
 
