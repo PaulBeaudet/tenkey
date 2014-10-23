@@ -53,7 +53,11 @@ void loop()
    if(pressState)
    {
      outputFilter(pressState);//handles output modes
-     if (pressState < 128){messageMode = START_INTERUPT;}//exclude macros
+     recordHandlr(pressState);//records presses to messageHandlr given active
+     if (pressState < 128 && !recordHandlr(MONITOR_MODE))
+     {// any letter      and  no recording 
+       messageMode = START_INTERUPT;
+     }//exclude macros
    }
    //EXTRA FEATURES 
    listenForMessage();// grab potential messages over serial
@@ -97,14 +101,14 @@ will mark a place in the tempBuffer to go back to
 Enter key mode is set to a one time transfer function that moves temp into the message hander   
 *******************************************************/
 
-void recordHandlr(byte mode)
+boolean recordHandlr(byte mode)
 {
   static boolean active = 0;
   static byte recordLength = 0;
   
   switch(mode)
   {
-    case MONITOR_MODE: break;
+    case MONITOR_MODE: return active; 
     case TRIGGER: 
       active = 1;
       enterBehavior(RECORD); 
@@ -122,7 +126,7 @@ void recordHandlr(byte mode)
         messageHandlr(mode);
         recordLength++;
       } 
-  }
+  }return 0;
 }
 
 void enterBehavior(byte mode) // this function handles enter states
@@ -146,13 +150,17 @@ void enterBehavior(byte mode) // this function handles enter states
   }
 }
 
+byte warningMessage[] = "recording";
+
 void outputFilter(byte letter)
 {// long holds shift bytes up; the following switch covers special options
   switch(letter)//takes in key letter
   { // execute special compand basd on long hold
     case CARIAGE_RETURN: enterBehavior(TRIGGER); break;
     case 129:break;                          //'a'
-    case 130: messageHandlr(CAT_OUT); break; //'b'
+    case 130: 
+      if (recordHandlr(MONITOR_MODE)){break;}    // collision prevention
+      messageHandlr(CAT_OUT); break;         //'b' print buffer
     case 131:break;                          //'c' copy; cache message
     case 132:break;                          //'d'
     case 133:break;                          //'e' Enter; confirm
@@ -168,7 +176,9 @@ void outputFilter(byte letter)
     case 143:break;                          //'o'
     case 144:potentiometer(CHECK_VALUE);break;//'p'
     case 145:break;                          //'q'
-    case 146:break;                          //'r'
+    case 146:
+      fastToast(warningMessage); 
+      recordHandlr(TRIGGER); break;          //'r'
     case 147: potentiometer(ADJUST_TIMING);break; //'s' haptic display speed
     case 148:break;                          //'t' Transmit send cache
     case 149:break;                          //'u'

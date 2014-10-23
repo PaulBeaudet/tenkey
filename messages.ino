@@ -78,6 +78,11 @@ void listenForMessage()
   }
 }
 //****************Output Functions ****************************
+void fastToast(byte message[])//quick indication message
+{
+  for(byte i=0;message[i];i++){keyOut(message[i]);}
+  for(byte i=0;message[i];i++){keyOut(BACKSPACE);}
+}
 
 void alphaHint()
 {
