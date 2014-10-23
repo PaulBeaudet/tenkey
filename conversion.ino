@@ -11,14 +11,6 @@ patternVibrate() drive pagers, pass a byte where each bit is a motor
 inputFilter() debounce cumalitive input and detect holds
   holdFilter()
 ********ASCII KEY******** Letter debouncing and convertion *************/
-#define BACKSPACE 8 // output keys
-#define TAB_KEY 9
-#define SPACEBAR 32
-#define CARIAGE_RETURN 13
-#define LETTER_A 97
-#define LETTER_Z 122
-#define L_THUMB 256 // input data
-#define R_THUMB 512
 
 //   --ANOTHERS-- layout a-n-o-t-h-e-r-s make up the homerow 
 const byte chordPatterns[] PROGMEM =

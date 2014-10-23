@@ -11,11 +11,8 @@ messageHandlr() has two types of call, an istantiation and matianance
 2-
 
 **********messaging functions*********************/
-#define BUFFER_SIZE 80   //cause why should a line be longer?
-#define TERMINATION '\0'
-#define NEW_LINE    '\n' //determines end of a message in buffer
 
-void messageHandlr(byte mode)
+boolean messageHandlr(byte mode)
 {
   static byte lineBuffer[BUFFER_SIZE]={};
   static byte pos = 0; // in this way buffer can be no greater than 255
@@ -30,7 +27,7 @@ void messageHandlr(byte mode)
         {// Check for end case before updating further
           removeThisMany(pos);//backspace printed chars
           playFlag=0; pos = 0;//reset possition and playflag
-          return;
+          return 0;
         }// END CASE: MESSAGE HAS BEEN PRINTED AND REMOVED
         if(hapticMessage(MONITOR_MODE))//<---Updates Letter display
         {//true == single letter display finished   
@@ -39,21 +36,22 @@ void messageHandlr(byte mode)
           pos++;//increment read possition
         }//false == waiting -> return -> continue main loop
       }//playFlag false == no directive to play ->continue main loop
-      else{patternVibrate(0);}//!!! sys wide release:turn pagers off!!!
-      return;//in any case return to avoid falling thru
+      //else{patternVibrate(0);}//!!! sys wide release:turn pagers off!!!
+      return 0;//in any case return to avoid falling thru
     case START_INTERUPT:// completly interupts message 
       if (playFlag) 
       {
         removeThisMany(pos);    //backspace printed chars
         pos = 0; playFlag = 0;  //reset possition and playflag
       }
-      return; 
+      return 0; 
     case CAT_OUT:
       playFlag = 1;
       hapticMessage(lineBuffer[pos]);
       keyOut(lineBuffer[pos]);
       pos++;
-      return;
+      return 0;
+    case JOB: return playFlag;
     default://SPACE-Z cases concat into buffer
       lineBuffer[pos] = mode; // assign incoming char to buffer
       if (mode == NEW_LINE){pos = 0;}//done recieving: zero possition
