@@ -34,6 +34,7 @@ void setup()//setup the needed hardware
 #define CAT_OUT        2 // set message to play : messageHandlr
 #define NUMBERS_MODE   2 // outputFilter: Numbers
 #define RECORD         2 // enterBehavior() record command
+#define MOVEMENT_MODE  3 // outputFilter() Movement
 #define JOB            3 // messageHandlr "is a job set?" argument
 #define CHECK_VALUE    1 // potentiometer()
 #define ADJUST_PWM     2 // potentiometer()

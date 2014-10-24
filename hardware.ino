@@ -55,12 +55,24 @@ void patternVibrate(int pins)
 void keyOut(byte keyPress)
 {
   #if defined UNO
+     if(keyPress > 128){return;} // these cases need to be translated for UNO
      Serial.write(keyPress); // serves both bluefruit and serial port
   #endif
   #if defined LEO // in the case of using the ATMEGA32u4 write both interfaces
      Serial1.write(keyPress);
      if(keyPress==CARIAGE_RETURN){keyPress=KEY_RETURN;}
      Keyboard.write(keyPress);
+  #endif
+}
+
+
+void comboPress(byte first, byte second, byte third)
+{// more deployable macro triger, would be nice if defaults could be used
+  #ifdef LEO
+    Keyboard.press(first);
+    Keyboard.press(second);
+    if(third){Keyboard.press(third);}
+    Keyboard.releaseAll();
   #endif
 }
 

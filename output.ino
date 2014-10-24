@@ -9,14 +9,16 @@ void outputFilter(byte letter)// letter/mode
   switch(letter)
   {
     case 0:return; // return for 0 just in case of bad input
-    case DEFAULT_MODE: modeType = DEFAULT_MODE; return;
-    case NUMBERS_MODE: modeType = NUMBERS_MODE; return;
+    case DEFAULT_MODE:  modeType = DEFAULT_MODE;  return;
+    case NUMBERS_MODE:  modeType = NUMBERS_MODE;  return;
+    case MOVEMENT_MODE: modeType = MOVEMENT_MODE; return;
   }
   
   switch(modeType)
   {
-    case DEFAULT_MODE: defaultMode(letter);break;
-    case NUMBERS_MODE: numbersMode(letter);break;
+    case DEFAULT_MODE:  defaultMode(letter);  break;
+    case NUMBERS_MODE:  numbersMode(letter);  break;
+    case MOVEMENT_MODE: movementMode(letter); break;
   }
 }
 
@@ -39,6 +41,43 @@ void enterBehavior(byte mode) // this function handles enter states
     case RECORD: triggerType = RECORD; break;// set record mode
     case 3: triggerType = 3; break;// set command mode 
   }
+}
+
+void movementMode(byte letter)
+{
+  switch(letter)
+    {//
+      //   detect homerow chars AKA unigrams
+      case 'a':keyOut(KEY_LEFT_ARROW);break;//
+      case 'n':;break;// sticky Alt
+      case 'o':;break;// sticky shift
+      case 't':keyOut(KEY_DOWN_ARROW);break;// 
+      case 'h':keyOut(KEY_UP_ARROW);break;// 
+      case 'e':;break;//  
+      case 'r':; break;// TAB
+      case 's':keyOut(KEY_RIGHT_ARROW);break;//
+      // detect bi and quad-gram situations 
+      case 'b':keyOut('.');break;//decimal point
+      case 'c':comboPress(KEY_LEFT_CTRL,'c', 0);break;//copy
+      case 'd':keyOut('$');break;//dollar
+      case 'f':keyOut(KEY_PAGE_UP);break;//page up
+      case 'g':keyOut(KEY_PAGE_DOWN);break;//page down
+      case 'i':keyOut(KEY_HOME);break;
+      case 'j':keyOut('(');break;
+      case 'k':keyOut(')');break;
+      case 'l':keyOut(KEY_CAPS_LOCK);break;//lock
+      case 'm':keyOut(KEY_INSERT);break;//insert
+      case 'p':keyOut('%');break;//percent-modulo
+      case 'q':keyOut(47) ;break;//Quotionent-devide
+      case 'u':keyOut(KEY_END);break;
+      case 'v':comboPress(KEY_LEFT_CTRL,'v',0);break;//paste
+      case 'w':keyOut(TAB_KEY) ;break; //alt tab keys
+      case 'x':comboPress(KEY_LEFT_CTRL,'x', 0);break;//cut
+      case 'y':keyOut(',');break;//comma 
+      case 'z':comboPress(KEY_LEFT_CTRL,'z', 0);break;//undo ctr - z  
+      case TAB_KEY:keyOut('=');break;//hold space for equals
+      default: defaultMode(letter);    
+    }
 }
 
 void numbersMode(byte letter)
@@ -88,7 +127,8 @@ void defaultMode(byte letter)
     case 130: 
       if (recordHandlr(MONITOR_MODE)){break;}    // collision prevention
       messageHandlr(CAT_OUT); break;         //'b' print buffer
-    case 131: layoutChange(); break;         //'c' Change layout "ctrl+alt"
+    case 131:comboPress(KEY_LEFT_CTRL,KEY_LEFT_ALT,0);break;//'c'
+    //Change layout - command will vary computer to computer 
     case 132:break;                          //'d'
     case 133:break;                          //'e' Enter; confirm
     case 134:break;                          //'f'
@@ -98,7 +138,7 @@ void defaultMode(byte letter)
     case 138:break;	                         //'j'
     case 139:break;	                         //'k'
     case 140:break;	                         //'l'
-    case 141:break;                          //'m' Message; cat cache
+    case 141:outputFilter(MOVEMENT_MODE); break; //'m' Movement Mode
     case 142:outputFilter(NUMBERS_MODE);break;//'n' Numbers Mode
     case 143:break;                          //'o'
     case 144:potentiometer(CHECK_VALUE);break;//'p'

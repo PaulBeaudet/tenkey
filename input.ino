@@ -17,16 +17,18 @@ byte inputFilter(byte input)
   
   if(byte event = holdFilter(input))// was there an event?
   {// only allow it if it is differant then the last event
-    if(event == BACKSPACE){lastEvent = event; return event;} // include hold doubles
+    if(event == BACKSPACE){lastEvent = event; return event;} 
+    // include held doubles for backspace
     if (event != lastEvent)
     { // we have differant events 
-      output = event; // good, it allowed to be and event
+      output = event; // good, its allowed to be and event
       lastEvent = event; // note current event for next check
       if(uniAfterMulti(event, lastEvent)){output = 0;}//unless uniAfterMulti
     }   
   } // if the input is zero and enough time has elapsed reset the condition
   else if (!input && spacerTimer(0)>10) // timer counts pause time too
-  {lastEvent = 0;}//button has been let go long enough to discount odd stuff
+  {lastEvent = 0;}
+  //button has been let go long enough to discount odd stuff
   return output; 
 }
 
