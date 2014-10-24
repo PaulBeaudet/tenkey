@@ -54,6 +54,7 @@ boolean messageHandlr(byte mode)
     case JOB: return playFlag;
     default://SPACE-Z cases concat into buffer
       if (mode > 128){break;}//ignore special cases
+      if (mode == BACKSPACE){ pos--; break;} //delete buffer entry "RECORD"
       lineBuffer[pos] = mode; // assign incoming char to buffer
       if (mode == NEW_LINE){pos = 0;}//done recieving: zero possition
       else {pos++;} // increment write possition for more chars
