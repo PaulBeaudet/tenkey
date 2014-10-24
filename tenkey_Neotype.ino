@@ -22,6 +22,11 @@ void setup()//setup the needed hardware
 }
 
 /*** ^End setup^ ***** GLOBAL DEFINITIONS  *****************/
+//below is platform choice, comment in if using, out if not using
+#define LEO // Arduinos using the ATMEGA32u4 as the chip
+//#define UNO   // Arduinos using the 328p
+//!!comment in one or the other, determines pre-compiled conditions !!
+
 #define MONITOR_MODE   0
 #define START_INTERUPT 1 // removes output, zeros play point: messageHandlr
 #define TRIGGER        1 // set enter key to press : enterBehavior()

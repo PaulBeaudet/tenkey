@@ -2,11 +2,6 @@
 #include <Wire.h>
 #include "Adafruit_PWM.h"
 
-//below is platform choice, comment in if using, out if not using
-#define LEO // Arduinos using the ATMEGA32u4 as the chip
-//#define UNO   // Arduinos using the 328p
-//!!comment in one or the other, determines pre-compiled conditions !!
-
 Adafruit_PWM pagers = Adafruit_PWM();
 
 //global variables that need a home..
