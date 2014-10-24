@@ -17,14 +17,48 @@ byte inputFilter(byte input)
   
   if(byte event = holdFilter(input))// was there an event?
   {// only allow it if it is differant then the last event
-    if (event != lastEvent){output = event;} // exclude bounce clicks
-    else if(event == BACKSPACE){output = event;} // include hold doubles
-    //so it is the same? and it been held for more than 30ms? go for it
-    lastEvent = event; // note current event for next check
+    if(event == BACKSPACE){lastEvent = event; return event;} // include hold doubles
+    if (event != lastEvent)
+    { // we have differant events 
+      output = event; // good, it allowed to be and event
+      lastEvent = event; // note current event for next check
+      if(uniAfterMulti(event, lastEvent)){output = 0;}//unless uniAfterMulti
+    }   
   } // if the input is zero and enough time has elapsed reset the condition
   else if (!input && spacerTimer(0)>10) // timer counts pause time too
   {lastEvent = 0;}//button has been let go long enough to discount odd stuff
   return output; 
+}
+
+boolean uniAfterMulti(byte currentInput, byte lastInput)
+{ // was the last event a uni-gram? if so 
+  boolean lastWasUni = false;//guilty till proven inocent
+  switch(lastInput)
+  {
+    case 'a':
+    case 'n':
+    case 'o':
+    case 't':
+    case 'h':
+    case 'e':
+    case 'r':
+    case 's': lastWasUni = true;
+  }
+  if (lastWasUni == false)
+  {
+    switch(currentInput)
+    {
+      case 'a':
+      case 'n':
+      case 'o':
+      case 't':
+      case 'h':
+      case 'e':
+      case 'r':
+      case 's': return true; // uni followed by a bi,tri,or Quad gram
+    } // this is honestly and unlikey case within a small time frame
+  }
+  return false;
 }
 
 byte holdFilter(byte input)
