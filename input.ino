@@ -140,6 +140,7 @@ byte backActions(byte progress)
 byte spaceActions(byte progress)
 {
   if(progress == 2){return SPACEBAR;}
+  if(progress == 35){return BACKSPACE;}//be sure the tab is a true tab
   if(progress == 40){return TAB_KEY;}//hold for tab case
   return 0; // terminate outside space cases
 }
