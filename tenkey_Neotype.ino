@@ -30,7 +30,9 @@ void setup()//setup the needed hardware
 #define MONITOR_MODE   0
 #define START_INTERUPT 1 // removes output, zeros play point: messageHandlr
 #define TRIGGER        1 // set enter key to press : enterBehavior()
+#define DEFAULT_MODE   1 // outputFilter: regular letters
 #define CAT_OUT        2 // set message to play : messageHandlr
+#define NUMBERS_MODE   2 // outputFilter: Numbers
 #define RECORD         2 // enterBehavior() record command
 #define JOB            3 // messageHandlr "is a job set?" argument
 #define CHECK_VALUE    1 // potentiometer()
@@ -103,7 +105,8 @@ or just shift the current layout which is likely more pragmatic
 -Record mode might be practical to be happening all the time in another
 buffer for the sake of type correction. In this way the record macro
 will mark a place in the tempBuffer to go back to
-Enter key mode is set to a one time transfer function that moves temp into the message hander   
+Enter key mode is set to a one time transfer function 
+that moves temp into the message hander   
 *******************************************************/
 
 boolean recordHandlr(byte mode)
@@ -132,70 +135,4 @@ boolean recordHandlr(byte mode)
         recordLength++;
       } 
   }return 0;
-}
-
-void enterBehavior(byte mode) // this function handles enter states
-{ 
-  static byte triggerType = 0;
-  switch(mode)
-  {
-    case TRIGGER:
-    switch(triggerType)
-    {
-      case 0: keyOut(CARIAGE_RETURN); break;
-      case RECORD: 
-        triggerType = 0; // set back to normal behavior
-        recordHandlr(CAT_OUT); // finish the recording
-        break; // record
-      case 3: break;// command
-    }
-    break;
-    case RECORD: triggerType = RECORD; break;// set record mode
-    case 3: triggerType = 3; break;// set command mode 
-  }
-}
-
-byte warningMessage[] = "recording";
-
-void outputFilter(byte letter)
-{// long holds shift bytes up; the following switch covers special options
-  switch(letter)//takes in key letter
-  { // execute special compand basd on long hold
-    case CARIAGE_RETURN: enterBehavior(TRIGGER); break;
-    case 129:break;                          //'a'
-    case 130: 
-      if (recordHandlr(MONITOR_MODE)){break;}    // collision prevention
-      messageHandlr(CAT_OUT); break;         //'b' print buffer
-    case 131: layoutChange(); break;         //'c' Change layout "ctrl+alt"
-    case 132:break;                          //'d'
-    case 133:break;                          //'e' Enter; confirm
-    case 134:break;                          //'f'
-    case 135:break;                          //'g' game
-    case 136: alphaHint(); break;            //'h' hatically displays alphabet
-    case 137:potentiometer(ADJUST_PWM);break;//'i' pwm intensity
-    case 138:break;	                         //'j'
-    case 139:break;	                         //'k'
-    case 140:break;	                         //'l'
-    case 141:break;                          //'m' Message; cat cache
-    case 142:break;                          //'n' nyan
-    case 143:break;                          //'o'
-    case 144:potentiometer(CHECK_VALUE);break;//'p'
-    case 145:break;                          //'q'
-    case 146:
-      fastToast(warningMessage); 
-      recordHandlr(TRIGGER); break;          //'r'
-    case 147: potentiometer(ADJUST_TIMING);break; //'s' haptic display speed
-    case 148:break;                          //'t' Transmit send cache
-    case 149:break;                          //'u'
-    case 150:break;                          //'v' varify 
-    case 151:break;                          //'w'
-    case 152:break;                          //'x'
-    case 153:break;                          //'y'
-    case 154:break;                          //'z'
-    case 155:break;                          //'openbracket'
-    case 156:break;                          //'pipe'
-    case 157:break;	                         //'closebrack'
-    case 158:break;	                         //'tilde'
-    default: keyOut(letter);//send ascii given no exception
-  }
 }
