@@ -102,6 +102,7 @@ byte holdFilter(byte input)
       case 'v':
       case 'w':
       case 'x':
+      case 'y':
       case 'z':output = chordActions(input, spacerTimer(0));break; 
       //special character situations (<91)
       default: if(spacerTimer(0)==1){output = input;}break;    
