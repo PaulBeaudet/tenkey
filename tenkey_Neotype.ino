@@ -24,7 +24,7 @@ void setup()//setup the needed hardware
 /*** ^End setup^ ***** GLOBAL DEFINITIONS  *****************/
 //below is platform choice, comment in if using, out if not using
 #define LEO // Arduinos using the ATMEGA32u4 as the chip
-//#define UNO   // Arduinos using the 328p
+//#define UNO   // Arduinos using the 328p + bluefruit EZ-key HID
 //!!comment in one or the other, determines pre-compiled conditions !!
 
 #define MONITOR_MODE   0
@@ -166,7 +166,7 @@ void outputFilter(byte letter)
     case 130: 
       if (recordHandlr(MONITOR_MODE)){break;}    // collision prevention
       messageHandlr(CAT_OUT); break;         //'b' print buffer
-    case 131:break;                          //'c' copy; cache message
+    case 131: layoutChange(); break;         //'c' Change layout "ctrl+alt"
     case 132:break;                          //'d'
     case 133:break;                          //'e' Enter; confirm
     case 134:break;                          //'f'

@@ -80,6 +80,15 @@ void listenForMessage()
   }
 }
 //****************Output Functions ****************************
+void layoutChange()// Should be changed to whatever switches your layout
+{// imagine those that might be using this might also have an alt layout
+  #ifdef LEO
+    Keyboard.press(KEY_LEFT_CTRL);
+    Keyboard.press(KEY_LEFT_ALT);
+    Keyboard.releaseAll();
+  #endif
+}
+
 void fastToast(byte message[])//quick indication message
 {
   for(byte i=0;message[i];i++){keyOut(message[i]);}
