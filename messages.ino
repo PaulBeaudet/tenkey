@@ -53,6 +53,7 @@ boolean messageHandlr(byte mode)
       return 0;
     case JOB: return playFlag;
     default://SPACE-Z cases concat into buffer
+      if (mode > 128){break;}//ignore special cases
       lineBuffer[pos] = mode; // assign incoming char to buffer
       if (mode == NEW_LINE){pos = 0;}//done recieving: zero possition
       else {pos++;} // increment write possition for more chars

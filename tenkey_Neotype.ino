@@ -57,7 +57,7 @@ void loop()
      if (pressState < 128 && !recordHandlr(MONITOR_MODE))
      {// any letter      and  no recording 
        messageMode = START_INTERUPT;
-     }//exclude macros
+     }//prevents macros from interupting messageHandlr
    }
    //EXTRA FEATURES 
    listenForMessage();// grab potential messages over serial
