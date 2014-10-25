@@ -109,31 +109,3 @@ will mark a place in the tempBuffer to go back to
 Enter key mode is set to a one time transfer function 
 that moves temp into the message hander   
 *******************************************************/
-
-boolean recordHandlr(byte mode)
-{
-  static boolean active = 0;
-  static byte recordLength = 0;
-  
-  switch(mode)
-  {
-    case MONITOR_MODE: return active; 
-    case TRIGGER: 
-      active = 1;
-      enterBehavior(RECORD); 
-      break;
-    case CAT_OUT: 
-      active = 0;
-      removeThisMany(recordLength);
-      recordLength = 0;
-      messageHandlr(NEW_LINE); 
-      messageHandlr(CAT_OUT);
-      break;
-    default: //letter is feed into the record
-      if(active)
-      {
-        messageHandlr(mode);
-        recordLength++;
-      } 
-  }return 0;
-}
