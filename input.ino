@@ -125,11 +125,11 @@ byte homerow(byte input, byte progress)
 {
   switch(progress)
   {
-    case 5:  return input;// typical print
+    case 7:  return input;// typical print
     case 40: return BACKSPACE;// delete to make room for a cap
-    case 60: return input-SPACEBAR;//downshift subtract 32 to get caps
-    case 90: return BACKSPACE;//delete char: prep for special commands
-    case 110:return input+SPACEBAR;//upshift: special commands
+    case 45: return input-SPACEBAR;//downshift subtract 32 to get caps
+    case 80: return BACKSPACE;//delete char: prep for special commands
+    case 85: return input+SPACEBAR;//upshift: special commands
     default: return 0;
   }
 }
@@ -154,9 +154,9 @@ byte chordActions(byte input, byte progress)
   {
     case 2:  return input;
     case 40: return BACKSPACE;
-    case 60: return input-SPACEBAR;
-    case 90: return BACKSPACE;
-    case 110:return input+SPACEBAR;
+    case 45: return input-SPACEBAR;
+    case 80: return BACKSPACE;
+    case 85:return input+SPACEBAR;
     default: return 0;
   }
 }
