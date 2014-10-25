@@ -59,20 +59,58 @@ void keyOut(byte keyPress)
      Serial.write(keyPress); // serves both bluefruit and serial port
   #endif
   #if defined LEO // in the case of using the ATMEGA32u4 write both interfaces
+     static boolean sticky = false;
+  
      Serial1.write(keyPress);
      if(keyPress==CARIAGE_RETURN){keyPress=KEY_RETURN;}
-     Keyboard.write(keyPress);
+     if(keyPress > 127 && keyPress < 136) //ctrl, alt, shift, gui
+     {
+       Keyboard.press(keyPress);
+       sticky = true;
+     }
+     else
+     {
+       if(sticky)//stick release cases
+       {
+         switch(keyPress)
+         {
+           case SPACEBAR:
+           case BACKSPACE:
+             Keyboard.releaseAll();
+             sticky = false;
+             break;
+         }
+       }     
+       else
+       {
+         Keyboard.press(keyPress);
+         Keyboard.release(keyPress);
+       }
+     }
   #endif
 }
 
-
-void comboPress(byte first, byte second, byte third)
+void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
 {// more deployable macro triger, would be nice if defaults could be used
   #ifdef LEO
     Keyboard.press(first);
     Keyboard.press(second);
     if(third){Keyboard.press(third);}
     Keyboard.releaseAll();
+  #endif
+}
+
+void keyRelease()// TODO bluefruit logic
+{
+  #ifdef LEO
+    Keyboard.releaseAll();
+  #endif
+}
+
+void keyHold(byte key) // TODO bluefruit logic
+{
+  #ifdef LEO
+    Keyboard.press(key);
   #endif
 }
 

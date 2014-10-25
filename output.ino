@@ -49,12 +49,12 @@ void movementMode(byte letter)
     {//
       //   detect homerow chars AKA unigrams
       case 'a':keyOut(KEY_LEFT_ARROW);break;//
-      case 'n':;break;// sticky Alt
-      case 'o':;break;// sticky shift
+      case 'n':break;// sticky Alt
+      case 'o':break;// TODO sticky shift keyOut(KEY_LEFT_SHIFT);
       case 't':keyOut(KEY_DOWN_ARROW);break;// 
       case 'h':keyOut(KEY_UP_ARROW);break;// 
-      case 'e':;break;//  
-      case 'r':; break;// TAB
+      case 'e':break;//  
+      case 'r':break;// TAB
       case 's':keyOut(KEY_RIGHT_ARROW);break;//
       // detect bi and quad-gram situations 
       case 'b':keyOut('.');break;//decimal point
@@ -66,7 +66,7 @@ void movementMode(byte letter)
       case 'j':keyOut('(');break;
       case 'k':keyOut(')');break;
       case 'l':keyOut(KEY_CAPS_LOCK);break;//lock
-      case 'm':keyOut(KEY_INSERT);break;//insert
+      case 'm':break;//!! note that this might activate comming into the mode
       case 'p':keyOut('%');break;//percent-modulo
       case 'q':keyOut(47) ;break;//Quotionent-devide
       case 'u':keyOut(KEY_END);break;
