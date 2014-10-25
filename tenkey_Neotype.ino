@@ -73,8 +73,7 @@ void loop()
    messageHandlr(messageMode);//async message mangment-interupt with keystroke
 }
 
-/********** Main functions *************
-*************************************/
+//********** Main functions *************
 byte chordLoop(int input) // takes sample of buttons: returns true for press
 {// main progam loop is abstracted here, so it can be switch with other test
   byte actionableSample= patternToChar(input); //determine chord validity
