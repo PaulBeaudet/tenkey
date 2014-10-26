@@ -14,7 +14,7 @@ messageHandlr() has two types of call, an istantiation and matianance
 
 boolean messageHandlr(byte mode)
 {
-  static byte lineBuffer[BUFFER_SIZE]={};
+  static byte lineBuffer[LINE_SIZE]={};
   static byte pos = 0; // in this way buffer can be no greater than 255
   static boolean playFlag = 0;
   
@@ -58,7 +58,7 @@ boolean messageHandlr(byte mode)
       lineBuffer[pos] = mode; // assign incoming char to buffer
       if (mode == NEW_LINE){pos = 0;}//done recieving: zero possition
       else {pos++;} // increment write possition for more chars
-      if(pos==BUFFER_SIZE){pos--;}//just take the head till the new line
+      if(pos==LINE_SIZE){pos--;}//just take the head till the new line
   }  
 }
 

@@ -20,9 +20,12 @@ byte buttons[] = { 10,9,7,8,5,4,6,A3,A2,A0 };// pin out oppisite to pagers
 void serialInterfaceUp()
 {// all three interfaces are brought up in the ATMEGA32u4 case
   Serial.begin(9600);// serial on uno: bluefruit/message in LEO: message in
-  #if defined LEO // in leo case bluefruit is serial1
+  #ifdef LEO // in leo case bluefruit is serial1
     Keyboard.begin(); //begin wired via usb keyboard
     Serial1.begin(9600);
+  #endif
+  #ifdef YUN
+    Bridge.begin();
   #endif
 }
 
@@ -54,39 +57,28 @@ void patternVibrate(int pins)
 //-------------Writing keys to host----------
 void keyOut(byte keyPress)
 {
-  #if defined UNO
-     if(keyPress > 128){return;} // these cases need to be translated for UNO
-     Serial.write(keyPress); // serves both bluefruit and serial port
-  #endif
-  #if defined LEO // in the case of using the ATMEGA32u4 write both interfaces
-     static boolean sticky = false;
+  static boolean sticky = false;
   
-     Serial1.write(keyPress);
-     if(keyPress==CARIAGE_RETURN){keyPress=KEY_RETURN;}
-     if(keyPress > 127 && keyPress < 136) //ctrl, alt, shift, gui
-     {
-       Keyboard.press(keyPress);
-       sticky = true;
-     }
-     else
-     {
-       if(sticky)//stick release cases
-       {
-         switch(keyPress)
-         {
-           case SPACEBAR:
-           case BACKSPACE:
-             Keyboard.releaseAll();
-             sticky = false;
-             break;
-         }
-       }     
-       else
-       {
-         Keyboard.press(keyPress);
-         Keyboard.release(keyPress);
-       }
-     }
+  #ifdef UNO
+    if(keyPress > 128){return;} // these cases need to be translated for UNO
+    Serial.write(keyPress); // serves both bluefruit and serial port
+  #endif
+  #ifdef LEO // in the case of using the ATMEGA32u4 write both interfaces
+    Serial1.write(keyPress); // Send out to bluefruit
+    if(keyPress==CARIAGE_RETURN){keyPress=KEY_RETURN;}
+    if(keyPress > 127 && keyPress < 136) //ctrl, alt, shift, gui
+    {
+      Keyboard.press(keyPress);
+      sticky = true;
+    }
+    if(sticky && keyPress == SPACEBAR)//stick release cases
+    {
+      Keyboard.releaseAll();
+      sticky = false;
+      return;       
+    }
+    Keyboard.press(keyPress);
+    Keyboard.release(keyPress);
   #endif
 }
 
@@ -116,10 +108,10 @@ void keyHold(byte key) // TODO bluefruit logic
 
 void keyPrint(byte message)
 {
-  #if defined UNO
+  #ifdef UNO
      Serial.print(message); // serves both bluefruit and serial port
   #endif
-  #if defined LEO // in the case of using the ATMEGA32u4 write both interfaces
+  #ifdef LEO // in the case of using the ATMEGA32u4 write both interfaces
      Serial1.print(message);
      Keyboard.print(message);
   #endif

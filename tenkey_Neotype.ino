@@ -10,20 +10,10 @@
 * 8 Pagers sit on top of the chord keys to be able to feed back letters
 * depends on an adafruit I2C multiplex driver
 More detailed discription: arduinoMicropins.txt 
-**********************************/
-#include<avr/pgmspace.h>//explicitly stated read only memory
-
-void setup()//setup the needed hardware  
-{
-  pagersUp();          // hardware.ino: brings vibrating motor interface up
-  buttonUp();          // hardware.ino: brings button polling intreface up
-  serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
-  delay(6600);         // wait for the yun to stop interfering....
-}
-
-/*** ^End setup^ ***** GLOBAL DEFINITIONS  *****************/
-//below is platform choice, comment in if using, out if not using
+below is platform choice, comment in if using, out if not using
+**************** GLOBAL DEFINITIONS ************************/
 #define LEO // Arduinos using the ATMEGA32u4 as the chip
+#define YUN // Comment in if using the arduino yun for shell access
 //#define UNO   // Arduinos using the 328p + bluefruit EZ-key HID
 //!!comment in one or the other, determines pre-compiled conditions !!
 
@@ -39,7 +29,7 @@ void setup()//setup the needed hardware
 #define CHECK_VALUE    1 // potentiometer()
 #define ADJUST_PWM     2 // potentiometer()
 #define ADJUST_TIMING  3 // potentiometer()
-#define BUFFER_SIZE    80   //cause why should a line be longer?
+#define LINE_SIZE      80   //cause why should a line be longer?
 #define TERMINATION    '\0'
 #define NEW_LINE       '\n' //determines end of a message in buffer
 #define BACKSPACE      8    // output keys
@@ -50,6 +40,20 @@ void setup()//setup the needed hardware
 #define LETTER_Z       122
 #define L_THUMB        256  // input data
 #define R_THUMB        512
+
+#ifdef YUN // given YUN board choice include process libraries for bridge
+  #include <Process.h>
+#endif
+#include<avr/pgmspace.h>//explicitly stated read only memory
+
+void setup()//setup the needed hardware  
+{
+  pagersUp();          // hardware.ino: brings vibrating motor interface up
+  buttonUp();          // hardware.ino: brings button polling intreface up
+  serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
+  delay(6600);         // wait for the yun to stop interfering....
+}
+
 
 /**** Main Loop ***********************************************/
 
