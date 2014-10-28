@@ -50,7 +50,7 @@ void movementMode(byte letter)
       //   detect homerow chars AKA unigrams
       case 'a':keyOut(KEY_LEFT_ARROW);break;//
       case 'n':break;// sticky Alt
-      case 'o':break;// TODO sticky shift keyOut(KEY_LEFT_SHIFT);
+      case 'o':keyOut(KEY_LEFT_SHIFT);break;// TODO sticky shift 
       case 't':keyOut(KEY_DOWN_ARROW);break;// 
       case 'h':keyOut(KEY_UP_ARROW);break;// 
       case 'e':break;//  
@@ -137,7 +137,10 @@ void defaultMode(byte letter)
     case 137:potentiometer(ADJUST_PWM);break;//'i' pwm intensity
     case 138:break;	                         //'j'
     case 139:break;	                         //'k'
-    case 140:break;	                         //'l'
+    case 140:
+      shellInput("pwd");
+      shellReadBack();
+      break;	                               //'l' //ls
     case 141:outputFilter(MOVEMENT_MODE); break; //'m' Movement Mode
     case 142:outputFilter(NUMBERS_MODE);break;//'n' Numbers Mode
     case 143:break;                          //'o'

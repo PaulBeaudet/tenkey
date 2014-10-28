@@ -43,6 +43,7 @@ below is platform choice, comment in if using, out if not using
 
 #ifdef YUN // given YUN board choice include process libraries for bridge
   #include <Process.h>
+  Process linux;
 #endif
 #include<avr/pgmspace.h>//explicitly stated read only memory
 

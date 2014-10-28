@@ -116,6 +116,28 @@ void keyPrint(byte message)
      Keyboard.print(message);
   #endif
 }
+//---------- YUN specific --------------
+void shellInput(char command[])
+{
+  #ifdef YUN
+    linux.runShellCommand(command);
+  #endif
+}
+
+void shellReadBack()
+{
+  #ifdef YUN
+    while(linux.running()){;}
+    while(linux.available())
+    {
+      byte currentOutput = linux.read();
+      hapticMessage(currentOutput);
+      keyOut(currentOutput);
+      while(!hapticMessage(MONITOR_MODE)){;}//wait for letter to "play"
+      if(buttonSample()){break;}//break output upon any input
+    }
+  #endif
+}
 //---------------Sampling buttons-------------
 int buttonSample()
 { // sample the keys and mask/combine them into an interger/"chord"
