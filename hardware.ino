@@ -6,7 +6,7 @@ Adafruit_PWM pagers = Adafruit_PWM();
 
 //global variables that need a home..
 int PWMintensity = 0; // Adjusts the intensity of the pwm
-int HAPTICTIMING = 300; //ms, haptic display durration; user adjustable
+int HAPTICTIMING = 200; //ms, haptic display durration; user adjustable
 //--------expermental hardware--------------
 #define BUZZER 11
 #define ADJUST_POT A1
@@ -122,14 +122,14 @@ void useTheCommandLine(char command[])
 {
   #ifdef YUN
     linux.runShellCommand(command);
-    while(linux.running()){;}
-    while(linux.available())
+    while(linux.running()){;} // wait for the yun to finish thinking
+    while(linux.available())  // while there are things in the serial buffer
     {
-      byte currentOutput = linux.read();
-      hapticMessage(currentOutput);
-      keyOut(currentOutput);
+      byte currentOutput = linux.read(); //read the sequential bytes
+      hapticMessage(currentOutput);      //haptcally dispal the char
+      keyOut(currentOutput);             // print out the key as a keyboard
       while(!hapticMessage(MONITOR_MODE)){;}//wait for letter to "play"
-      if(buttonSample()){break;}//break output upon any input
+      //if(buttonSample()){break;}//break output upon any input
     }
   #endif
 }
@@ -164,7 +164,7 @@ void potentiometer(byte mode)
     case PWM_ADJUST://mode that does adjusting 
       PWMintensity = map(potValue, 0, 1023, 0, 4095); break;
     case TIMING_ADJUST://mode that does adjusting
-      HAPTICTIMING = map(potValue, 0, 1023, 200, 2000); break; 
+      HAPTICTIMING = map(potValue, 0, 1023, 100, 2000); break; 
   } 
 }
 
