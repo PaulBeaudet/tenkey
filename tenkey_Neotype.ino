@@ -24,8 +24,9 @@ below is platform choice, comment in if using, out if not using
 #define CAT_OUT        2 // set message to play : messageHandlr
 #define NUMBERS_MODE   2 // outputFilter: Numbers
 #define RECORD         2 // enterBehavior() record command
+#define COMMAND        3 // enterBehavior() command command
 #define MOVEMENT_MODE  3 // outputFilter() Movement
-#define JOB            3 // messageHandlr "is a job set?" argument
+#define JOB            4 // messageHandlr "is a job set?" argument
 #define CHECK_VALUE    1 // potentiometer()
 #define ADJUST_PWM     2 // potentiometer()
 #define ADJUST_TIMING  3 // potentiometer()
@@ -65,8 +66,9 @@ void loop()
    // captures the current state of the buttons
    if(pressState)
    {
-     outputFilter(pressState);//handles output modes
      recordHandlr(pressState);//records presses to messageHandlr given active
+     //note: needs to be before outputFilter, for the sake of new lines
+     outputFilter(pressState);//handles output modes
      if (pressState < 128 && !recordHandlr(MONITOR_MODE))
      {// any letter      and  no recording 
        messageMode = START_INTERUPT;

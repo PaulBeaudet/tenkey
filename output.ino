@@ -1,7 +1,5 @@
 /******* output.ino *******/
 
-byte warningMessage[] = "recording";
-
 void outputFilter(byte letter)// letter/mode
 {
   static byte modeType = DEFAULT_MODE;
@@ -27,19 +25,29 @@ void enterBehavior(byte mode) // this function handles enter states
   static byte triggerType = 0;
   switch(mode)
   {
-    case TRIGGER:
-    switch(triggerType)
+    case TRIGGER://1
+    switch(triggerType) // in the case enter is pressed
     {
       case 0: keyOut(CARIAGE_RETURN); break;
-      case RECORD: 
+      case RECORD://2 
         triggerType = 0; // set back to normal behavior
-        recordHandlr(CAT_OUT); // finish the recording
+        recordHandlr(CAT_OUT);   // finish the recording
         break; // record
-      case 3: break;// command
+      case COMMAND://3
+        recordHandlr(CAT_OUT);
+        messageHandlr(COMMAND);  // activate shell command
+        break;// command
     }
     break;
-    case RECORD: triggerType = RECORD; break;// set record mode
-    case 3: triggerType = 3; break;// set command mode 
+    // in the case parameters are being set
+    case RECORD: 
+      if(triggerType == RECORD) {triggerType=0;}// in this way
+      else{triggerType = RECORD;}               // record mode toggles
+      break;// set record mode
+    case COMMAND://3 
+      if(triggerType == COMMAND){triggerType=0;}//set back to normal behavior
+      else{triggerType = COMMAND;} //toggle command mode
+      break;// set command mode 
   }
 }
 
@@ -138,19 +146,22 @@ void defaultMode(byte letter)
     case 138:break;	                         //'j'
     case 139:break;	                         //'k'
     case 140:
-      shellInput("pwd");
-      shellReadBack();
+      useTheCommandLine("pwd");
       break;	                               //'l' //ls
     case 141:outputFilter(MOVEMENT_MODE); break; //'m' Movement Mode
     case 142:outputFilter(NUMBERS_MODE);break;//'n' Numbers Mode
     case 143:break;                          //'o'
     case 144:potentiometer(CHECK_VALUE);break;//'p'
     case 145:break;                          //'q'
-    case 146:
-      fastToast(warningMessage); 
-      recordHandlr(TRIGGER); break;          //'r'
+    case 146://'r'---------------------------Record Mode
+      recordHandlr(TRIGGER); //recording begins now
+      enterBehavior(RECORD); //enter will now submit a recording
+      break;          //'r'
     case 147: potentiometer(ADJUST_TIMING);break; //'s' haptic display speed
-    case 148:break;                          //'t' Transmit send cache
+    case 148://'t'---------------------------Terminal Mode 
+     recordHandlr(TRIGGER);
+     enterBehavior(COMMAND); // enter will now submit commands 
+     break;  //'t' Terminal
     case 149:break;                          //'u'
     case 150:break;                          //'v' varify 
     case 151:break;                          //'w'

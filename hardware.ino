@@ -117,16 +117,11 @@ void keyPrint(byte message)
   #endif
 }
 //---------- YUN specific --------------
-void shellInput(char command[])
+
+void useTheCommandLine(char command[])
 {
   #ifdef YUN
     linux.runShellCommand(command);
-  #endif
-}
-
-void shellReadBack()
-{
-  #ifdef YUN
     while(linux.running()){;}
     while(linux.available())
     {

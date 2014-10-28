@@ -9,12 +9,11 @@ messageHandlr() has two types of call, an istantiation and matianance
  it can be played back whenever by holding B
  backspaces will be handled by an external placeKeep function
 2-
-
 **********messaging functions*********************/
 
 boolean messageHandlr(byte mode)
 {
-  static byte lineBuffer[LINE_SIZE]={};
+  static char lineBuffer[LINE_SIZE]={};
   static byte pos = 0; // in this way buffer can be no greater than 255
   static boolean playFlag = 0;
   
@@ -36,22 +35,25 @@ boolean messageHandlr(byte mode)
           pos++;//increment read possition
         }//false == waiting -> return -> continue main loop
       }//playFlag false == no directive to play ->continue main loop
-      //else{patternVibrate(0);}//!!! sys wide release:turn pagers off!!!
       return 0;//in any case return to avoid falling thru
-    case START_INTERUPT:// completly interupts message 
+    case START_INTERUPT://1 completly interupts message 
       if (playFlag) 
       {
         removeThisMany(pos);    //backspace printed chars
         pos = 0; playFlag = 0;  //reset possition and playflag
       }
       return 0; 
-    case CAT_OUT:
+    case CAT_OUT://3
       playFlag = 1;
       hapticMessage(lineBuffer[pos]);
       keyOut(lineBuffer[pos]);
       pos++;
       return 0;
-    case JOB: return playFlag;
+    case COMMAND://recorded buffer to yun
+      useTheCommandLine(lineBuffer);
+      pos = 0;
+      break;
+    case JOB: return playFlag; // 4
     default://SPACE-Z cases concat into buffer
       if (mode > 128){break;}//ignore special cases
       if (mode == BACKSPACE){ pos--; break;} //delete buffer entry "RECORD"
@@ -80,6 +82,7 @@ void listenForMessage()
   }
 }
 //********** message recording *********************** 
+
 boolean recordHandlr(byte mode)
 {
   static boolean active = 0;
@@ -87,31 +90,33 @@ boolean recordHandlr(byte mode)
   
   switch(mode)
   {
-    case MONITOR_MODE: return active; 
-    case TRIGGER: 
-      active = 1;
-      enterBehavior(RECORD); 
+    case MONITOR_MODE: return active;//probes if recording to prevent overflow
+    case TRIGGER: //1
+      active = !active;
+      if(active){fastToast("recording");} // flash recording warning
+      else{recordLength=0;}
       break;
-    case CAT_OUT: 
+    case CAT_OUT: //2
       active = 0;
       removeThisMany(recordLength);
       recordLength = 0;
-      messageHandlr(NEW_LINE); 
-      messageHandlr(CAT_OUT);
       break;
     default: //letter is feed into the record
       if(active)
       {
         messageHandlr(mode);
-        recordLength++;
+        if(mode == BACKSPACE){recordLength--;}
+        else if (mode > 127){;}//nonprinting char skip
+        else{recordLength++;}
       } 
   }return 0;
 }
 //****************Output Functions ****************************
 
-void fastToast(byte message[])//quick indication message
-{
-  for(byte i=0;message[i];i++){keyOut(message[i]);}
+void fastToast(char message[])//quick indication message
+{ // TODO include haptics
+  for(byte i=0;message[i];i++){keyOut(message[i]);delay(5);}
+  delay(5);
   for(byte i=0;message[i];i++){keyOut(BACKSPACE);}
 }
 
