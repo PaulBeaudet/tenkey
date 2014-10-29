@@ -133,19 +133,6 @@ void removeThisMany(int numberOfChars)
 }
 
 //************lower level haptic logic***************
-boolean ptimeCheck(uint32_t durration)
-{//used for checking an setting timer
-  static uint32_t ptimer[2] = { };// create timer to modify
-  if(durration)
-  {
-    ptimer[1]=durration; //set durration
-    ptimer[0]=millis();  // note the time set
-  }
-  else if(millis() - ptimer[0] > ptimer[1]){return true;}
-  // if the durration has elapsed
-  return false;
-} 
-
 boolean hapticMessage(byte letter) 
 { // updating function; passing a string sets course of action
   static boolean touchPause= 0; // pause between displays

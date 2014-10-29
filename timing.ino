@@ -24,3 +24,15 @@ byte spacerTimer(byte reset)
     }
     return 0;// in most cases called, time will yet to be ellapsed 
 }
+
+boolean ptimeCheck(uint32_t durration)
+{                                 // used for checking and setting timer
+  static uint32_t ptimer[2] = { };// create timer to modify
+  if(durration)                   // given param other than zero
+  {                               // time is being set
+    ptimer[1]=durration;          // set durration
+    ptimer[0]=millis();           // note the time set
+  }                               // if the durration has elapsed return true
+  else if(millis() - ptimer[0] > ptimer[1]){return true;}//time has passed  
+  return false;                   //time has yet to pass
+} 
