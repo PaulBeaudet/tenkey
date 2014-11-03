@@ -11,11 +11,11 @@
 * depends on an adafruit I2C multiplex driver
 More detailed discription: arduinoMicropins.txt 
 below is platform choice, comment in if using, out if not using
-**************** GLOBAL DEFINITIONS ************************/
-#define LEO // Arduinos using the ATMEGA32u4 as the chip
-#define YUN // Comment in if using the arduino yun for shell access
+**************** COMMENT IN ARDUINO BOARD HERE ************************/
+//#define LEO // Arduino Micro or Leonardo USB HID or Bluefruit
+#define YUN //Bluefruit is only compatible with yun via software serial 
+#define YUN_BOOT_OUTPUT true // mark true to see yun boot msgs on serial
 //#define UNO   // Arduinos using the 328p + bluefruit EZ-key HID
-//!!comment in one or the other, determines pre-compiled conditions !!
 
 #define MONITOR_MODE   0
 #define START_INTERUPT 1 // removes output, zeros play point: messageHandlr
@@ -24,7 +24,6 @@ below is platform choice, comment in if using, out if not using
 #define CAT_OUT        2 // set message to play : messageHandlr
 #define NUMBERS_MODE   2 // outputFilter: Numbers
 #define RECORD         2 // enterBehavior() record command
-#define COMMAND        3 // enterBehavior() command command
 #define MOVEMENT_MODE  3 // outputFilter() Movement
 #define JOB            4 // messageHandlr "is a job set?" argument
 #define CHECK_VALUE    1 // potentiometer()
@@ -41,11 +40,9 @@ below is platform choice, comment in if using, out if not using
 #define LETTER_Z       122
 #define L_THUMB        256  // input data
 #define R_THUMB        512
+#define XON            17 // control_Q resume terminal output
+#define XOFF           19 // control_S stop terminal output
 
-#ifdef YUN // given YUN board choice include process libraries for bridge
-  #include <Process.h>
-  Process linux;
-#endif
 #include<avr/pgmspace.h>//explicitly stated read only memory
 
 void setup()//setup the needed hardware  
@@ -53,12 +50,9 @@ void setup()//setup the needed hardware
   pagersUp();          // hardware.ino: brings vibrating motor interface up
   buttonUp();          // hardware.ino: brings button polling intreface up
   serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
-  delay(6600);         // wait for the yun to stop interfering....
 }
 
-
 /**** Main Loop ***********************************************/
-
 void loop() 
 {
    byte messageMode = MONITOR_MODE; //default to Monitor
@@ -70,14 +64,16 @@ void loop()
      //note: needs to be before outputFilter, for the sake of new lines
      outputFilter(pressState);//handles output modes
      if (pressState < 128 && !recordHandlr(MONITOR_MODE))
-     {// any letter      and  no recording 
+     {// any macro      and  no recording 
        messageMode = START_INTERUPT;
      }//prevents macros from interupting messageHandlr
    }
    //EXTRA FEATURES 
-   listenForMessage();// grab potential messages over serial
+   listenForMessage();// grab potential messages over usb serial
    potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
    messageHandlr(messageMode);//async message mangment-interupt with keystroke
+   //Yun specific
+   serialBowl(); // check: terminal responses
 }
 
 //********** Main functions *************
@@ -85,7 +81,8 @@ byte chordLoop(int input) // takes sample of buttons: returns true for press
 {// main progam loop is abstracted here, so it can be switch with other test
   byte actionableSample= patternToChar(input); //determine chord validity
   if(actionableSample){patternVibrate(input);} //actuate pagers:if letters
-  else if(!messageHandlr(JOB)){patternVibrate(0);}//release:turn pagers off
+  else if(!messageHandlr(JOB) && !serialBowl()){patternVibrate(0);}
+  //      except for special printing cases     release:turn pagers off
   return inputFilter(actionableSample);
 }//            debounce -> check hold -> return ASCII:letter or action code
 

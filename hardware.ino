@@ -19,13 +19,21 @@ byte buttons[] = { 10,9,7,8,5,4,6,A3,A2,A0 };// pin out oppisite to pagers
 //------------HARDWARE SETUP --------------------------
 void serialInterfaceUp()
 {// all three interfaces are brought up in the ATMEGA32u4 case
-  Serial.begin(9600);// serial on uno: bluefruit/message in LEO: message in
+  #ifdef UNO
+    Serial.begin(9600);// Bluefruit EZ key HID
+  #endif
   #ifdef LEO // in leo case bluefruit is serial1
+    Serial.begin(9600);//messages in
     Keyboard.begin(); //begin wired via usb keyboard
-    Serial1.begin(9600);
+    Serial1.begin(9600); //possible comunication Bluefruit via pins 0,1
   #endif
   #ifdef YUN
-    Bridge.begin();
+    Keyboard.begin();//begin wired via usb keyboard
+    Serial.begin(115200); // debug output / message input 
+    Serial1.begin(250000); // begin communication with dd-wrt ash terminal
+    // make sure linux has booted and shutdown bridge
+    bootCheck(); // returns true for boot, full boot takes about 60sec
+    bridgeShutdown();// with bridge shutdown serial1 acts as raw shell access
   #endif
 }
 
@@ -43,9 +51,7 @@ void buttonUp()// it's cold out there, set up the buttons
   for (byte set=0;set<NUMBUTTONS;set++){ pinMode(buttons[set], INPUT_PULLUP);}
 }//pull-up -> 20k 5v rail| Pin-> button -> ground:reads low pressed
 
-/*********** Harware Functions ************
-
-********** actuating pagers***************/
+/********** actuating pagers***************/
 void patternVibrate(int pins)
 { //set state of all pagers in one function
   for (byte i=0; i<NUMPAGERS; i++) 
@@ -57,29 +63,38 @@ void patternVibrate(int pins)
 //-------------Writing keys to host----------
 void keyOut(byte keyPress)
 {
-  static boolean sticky = false;
-  
   #ifdef UNO
     if(keyPress > 128){return;} // these cases need to be translated for UNO
-    Serial.write(keyPress); // serves both bluefruit and serial port
   #endif
-  #ifdef LEO // in the case of using the ATMEGA32u4 write both interfaces
-    Serial1.write(keyPress); // Send out to bluefruit
-    if(keyPress==CARIAGE_RETURN){keyPress=KEY_RETURN;}
-    if(keyPress > 127 && keyPress < 136) //ctrl, alt, shift, gui
-    {
-      Keyboard.press(keyPress);
-      sticky = true;
-    }
-    if(sticky && keyPress == SPACEBAR)//stick release cases
-    {
-      Keyboard.releaseAll();
-      sticky = false;
-      return;       
-    }
+  
+  Serial.write(keyPress); // debug or bluefruit
+  byte HIDready = keyPress;
+  if(keyPress==CARIAGE_RETURN){HIDready=KEY_RETURN;keyPress = NEW_LINE;}
+  
+  #ifdef LEO 
+    Keyboard.write(HIDready);
+  #endif
+  #ifdef YUN
+    Keyboard.write(HIDready);
+    if(terminalToggle(1)){Serial1.write(keyPress);}
+  #endif
+}
+
+void stickyHandlr(byte keyPress) // TODO intergrate
+{
+  static boolean sticky = false;
+  
+  if(keyPress > 127 && keyPress < 136) //ctrl, alt, shift, gui
+  {
     Keyboard.press(keyPress);
-    Keyboard.release(keyPress);
-  #endif
+    sticky = true;
+  }
+  if(sticky && keyPress == SPACEBAR)//stick release cases
+  {
+    Keyboard.releaseAll();
+    sticky = false;
+    return;       
+  }
 }
 
 void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
@@ -90,49 +105,86 @@ void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
     if(third){Keyboard.press(third);}
     Keyboard.releaseAll();
   #endif
-}
-
-void keyRelease()// TODO bluefruit logic
-{
-  #ifdef LEO
+  #ifdef YUN
+    Keyboard.press(first);
+    Keyboard.press(second);
+    if(third){Keyboard.press(third);}
     Keyboard.releaseAll();
   #endif
 }
 
-void keyHold(byte key) // TODO bluefruit logic
-{
-  #ifdef LEO
-    Keyboard.press(key);
-  #endif
-}
-
-void keyPrint(byte message)
-{
-  #ifdef UNO
-     Serial.print(message); // serves both bluefruit and serial port
-  #endif
-  #ifdef LEO // in the case of using the ATMEGA32u4 write both interfaces
-     Serial1.print(message);
-     Keyboard.print(message);
-  #endif
-}
 //---------- YUN specific --------------
-
-void useTheCommandLine(char command[])
-{
-  #ifdef YUN
-    linux.runShellCommand(command);
-    while(linux.running()){;} // wait for the yun to finish thinking
-    while(linux.available())  // while there are things in the serial buffer
+#ifdef YUN
+  void bridgeShutdown()
+  {
+    Serial1.write((uint8_t *)"\xff\0\0\x05XXXXX\x7f\xf9", 11);//shutdown bridge
+    Serial1.println();//send a new line character to enter shutdown garbage
+    delay(2);// wait for the buffer to fill with garbage
+    while(Serial1.available()){Serial1.read();} // read out shutdown garbage
+  }
+  
+  boolean bootCheck()
+  {
+    boolean booting = false;//assume complete boot
+    ptimeCheck(17800);      //set timer for max distance between boot outputs
+    // have recorded +16 sec between some outputs: important if reset midboot
+    while(!ptimeCheck(0))   //before the timer is up
     {
-      byte currentOutput = linux.read(); //read the sequential bytes
-      hapticMessage(currentOutput);      //haptcally dispal the char
-      keyOut(currentOutput);             // print out the key as a keyboard
-      while(!hapticMessage(MONITOR_MODE)){;}//wait for letter to "play"
-      //if(buttonSample()){break;}//break output upon any input
+      while(Serial1.available())
+      {
+        bootHandler(YUN_BOOT_OUTPUT);
+        booting = true;    //buffer filled before user interaction was possible
+      }
+    }                      // timer returns true when finished exiting loop
+    if (booting)
+    {
+      ptimeCheck(50000);   //give enough time to finish booting
+      while(!ptimeCheck(0))//before time is finished     
+      {
+        while(Serial1.available()){bootHandler(YUN_BOOT_OUTPUT);}
+      }                    //handle rest of output
     }
+    return booting;        //in case of conditions looking for boot
+  }
+
+  void bootHandler(boolean startUpOutput)//pass true for verbose output
+  { //mirror boot process to the serial monitor if true argument is passed
+    if(startUpOutput){Serial.write(Serial1.read());} 
+    else{Serial1.read();}//empty buffer with empty reads
+  }
+#endif
+
+boolean serialBowl()
+{ // keep the alphabits from overflowing
+  static boolean printing = false;
+  #ifdef YUN
+    if(hapticMessage(MONITOR_MODE)) // letter played or boot has occurred
+    {
+      byte incoming = Serial1.read(); 
+      if (incoming == 255){printing = false;} //255 = -1 in byte land
+      else if (incoming && terminalToggle(1))
+      {
+        printing = true;
+        hapticMessage(incoming);
+        //Keyboard.write(incoming);
+        Serial.write(incoming);
+      }
+    }
+    if(Serial1.available() > 3){Serial1.write(XOFF);}
+    else{Serial1.write(XON);}
+  #endif
+  return printing;
+}
+
+boolean terminalToggle(boolean returnVar)
+{
+  static boolean terminalMode = false;
+  if(returnVar){return terminalMode;} //preclude toggle
+  #ifdef YUN
+    terminalMode = !terminalMode;//terminal mode possible on yun
   #endif
 }
+
 //---------------Sampling buttons-------------
 int buttonSample()
 { // sample the keys and mask/combine them into an interger/"chord"
@@ -170,7 +222,8 @@ void potentiometer(byte mode)
 
 void potReturn(int potValue)
 {
-  keyPrint(map(potValue,0,1023,0,9));
+  byte rawNumber = map(potValue,0,1023,0,9);
+  keyOut(rawNumber + 48); // turn the raw number into an ascii one
   delay(HAPTICTIMING); //give user time to see
   keyOut(BACKSPACE);
 }

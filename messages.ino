@@ -43,16 +43,12 @@ boolean messageHandlr(byte mode)
         pos = 0; playFlag = 0;  //reset possition and playflag
       }
       return 0; 
-    case CAT_OUT://3
+    case CAT_OUT://2
       playFlag = 1;
       hapticMessage(lineBuffer[pos]);
       keyOut(lineBuffer[pos]);
       pos++;
       return 0;
-    case COMMAND://recorded buffer to yun
-      useTheCommandLine(lineBuffer);
-      pos = 0;
-      break;
     case JOB: return playFlag; // 4
     default://SPACE-Z cases concat into buffer
       if (mode > 128){break;}//ignore special cases

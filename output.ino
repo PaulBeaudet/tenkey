@@ -33,10 +33,6 @@ void enterBehavior(byte mode) // this function handles enter states
         triggerType = 0; // set back to normal behavior
         recordHandlr(CAT_OUT);   // finish the recording
         break; // record
-      case COMMAND://3
-        recordHandlr(CAT_OUT);
-        messageHandlr(COMMAND);  // activate shell command
-        break;// command
     }
     break;
     // in the case parameters are being set
@@ -44,10 +40,6 @@ void enterBehavior(byte mode) // this function handles enter states
       if(triggerType == RECORD) {triggerType=0;}// in this way
       else{triggerType = RECORD;}               // record mode toggles
       break;// set record mode
-    case COMMAND://3 
-      if(triggerType == COMMAND){triggerType=0;}//set back to normal behavior
-      else{triggerType = COMMAND;} //toggle command mode
-      break;// set command mode 
   }
 }
 
@@ -58,7 +50,7 @@ void movementMode(byte letter)
       //   detect homerow chars AKA unigrams
       case 'a':keyOut(KEY_LEFT_ARROW);break;//
       case 'n':break;// sticky Alt
-      case 'o':keyOut(KEY_LEFT_SHIFT);break;// TODO sticky shift 
+      case 'o':break;//keyOut(KEY_LEFT_SHIFT); TODO sticky shift 
       case 't':keyOut(KEY_DOWN_ARROW);break;// 
       case 'h':keyOut(KEY_UP_ARROW);break;// 
       case 'e':break;//  
@@ -145,9 +137,7 @@ void defaultMode(byte letter)
     case 137:potentiometer(ADJUST_PWM);break;//'i' pwm intensity
     case 138:break;	                         //'j'
     case 139:break;	                         //'k'
-    case 140:
-      useTheCommandLine("pwd");
-      break;	                               //'l' //ls
+    case 140:break;	                         //'l'
     case 141:outputFilter(MOVEMENT_MODE); break; //'m' Movement Mode
     case 142:outputFilter(NUMBERS_MODE);break;//'n' Numbers Mode
     case 143:break;                          //'o'
@@ -159,8 +149,7 @@ void defaultMode(byte letter)
       break;          //'r'
     case 147: potentiometer(ADJUST_TIMING);break; //'s' haptic display speed
     case 148://'t'---------------------------Terminal Mode 
-     recordHandlr(TRIGGER);
-     enterBehavior(COMMAND); // enter will now submit commands 
+     terminalToggle(0); 
      break;  //'t' Terminal
     case 149:break;                          //'u'
     case 150:break;                          //'v' varify 
