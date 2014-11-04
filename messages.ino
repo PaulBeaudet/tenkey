@@ -127,32 +127,3 @@ void removeThisMany(int numberOfChars)
 {//remove a numberOfChars...
   for(int i=0;i<numberOfChars;i++){keyOut(BACKSPACE);}
 }
-
-//************lower level haptic logic***************
-boolean hapticMessage(byte letter) 
-{ // updating function; passing a string sets course of action
-  static boolean touchPause= 0; // pause between displays
-  
-  if(letter)
-  {
-    ptimeCheck(HAPTICTIMING);//set the time for a letter to display
-    patternVibrate(charToPattern(letter));  //start vibrating that letter
-    return false;//why bother checking time... we just set it
-  }
-  //---------- 0 or "monitor" case ------- aka no letter check if done
-  if(ptimeCheck(0))
-  {               //time to "display" a touch / pause elapsed
-    if(touchPause)//given that we are at the pause stage FINAL
-    {             //this case allows for a pause after "display"
-      touchPause=!touchPause; //prep for next letter
-      return true;//Send confirmation this letter has been "played"
-    }
-    else          //durring the letter buzz phase
-    {
-      touchPause=!touchPause;    //flag pause time to start
-      patternVibrate(0);         //stop letter feedback
-      ptimeCheck(HAPTICTIMING/2);//set pause time
-    };
-  }
-  return false;  //signals letter in process of being played 
-}

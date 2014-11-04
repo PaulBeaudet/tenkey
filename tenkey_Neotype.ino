@@ -20,24 +20,20 @@ below is platform choice, comment in if using, out if not using
 #define MONITOR_MODE   0
 #define START_INTERUPT 1 // removes output, zeros play point: messageHandlr
 #define TRIGGER        1 // set enter key to press : enterBehavior()
-#define DEFAULT_MODE   1 // outputFilter: regular letters
+#define DEFAULT_MODE   1 // outputFilter: regular letters, potentiometer check
 #define CAT_OUT        2 // set message to play : messageHandlr
 #define NUMBERS_MODE   2 // outputFilter: Numbers
 #define RECORD         2 // enterBehavior() record command
 #define MOVEMENT_MODE  3 // outputFilter() Movement
 #define JOB            4 // messageHandlr "is a job set?" argument
-#define CHECK_VALUE    1 // potentiometer()
 #define ADJUST_PWM     2 // potentiometer()
 #define ADJUST_TIMING  3 // potentiometer()
 #define LINE_SIZE      80   //cause why should a line be longer?
-#define TERMINATION    '\0'
 #define NEW_LINE       '\n' //determines end of a message in buffer
 #define BACKSPACE      8    // output keys
 #define TAB_KEY        9
 #define SPACEBAR       32
 #define CARIAGE_RETURN 13
-#define LETTER_A       97
-#define LETTER_Z       122
 #define L_THUMB        256  // input data
 #define R_THUMB        512
 #define XON            17 // control_Q resume terminal output
@@ -52,7 +48,6 @@ void setup()//setup the needed hardware
   serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
 }
 
-/**** Main Loop ***********************************************/
 void loop() 
 {
    byte messageMode = MONITOR_MODE; //default to Monitor
@@ -75,40 +70,3 @@ void loop()
    //Yun specific
    serialBowl(); // check: terminal responses
 }
-
-//********** Main functions *************
-byte chordLoop(int input) // takes sample of buttons: returns true for press
-{// main progam loop is abstracted here, so it can be switch with other test
-  byte actionableSample= patternToChar(input); //determine chord validity
-  if(actionableSample){patternVibrate(input);} //actuate pagers:if letters
-  else if(!messageHandlr(JOB) && !serialBowl()){patternVibrate(0);}
-  //      except for special printing cases     release:turn pagers off
-  return inputFilter(actionableSample);
-}//            debounce -> check hold -> return ASCII:letter or action code
-
-/************ Output flow ********************
-Actuation states are brought into main loop 
-(aka a is pressed or a special is pressed)
-The ASCII byte is passed to a mode function 
-certain nonprinting byte values can activate various "modes"
-Examples of modes could be the following
--- Shell mode: Enter behavior inserts tempBuffer into a linux shell
-    and returns output to haptic display
--- Numbers mode: Outputs numbers instead of letters 
--- Record  mode: Record letters 
--- listen  mode: Waits for messages to come over serial
--- messaging mode: send messages to contacts
-^ after outlining many off these can find intergation in one another
-^ particularly if output is held temporarily 
-    a flag could be placed for "record"
-    in that mode enter can signify transfering temp to messageHandlr
--Might make sence for the enter key to have various modes
-Catching the enter case into a mode switch
--numbers mode could use a seperate inputFilter 
-or just shift the current layout which is likely more pragmatic
--Record mode might be practical to be happening all the time in another
-buffer for the sake of type correction. In this way the record macro
-will mark a place in the tempBuffer to go back to
-Enter key mode is set to a one time transfer function 
-that moves temp into the message hander   
-*******************************************************/

@@ -141,7 +141,7 @@ void defaultMode(byte letter)
     case 141:outputFilter(MOVEMENT_MODE); break; //'m' Movement Mode
     case 142:outputFilter(NUMBERS_MODE);break;//'n' Numbers Mode
     case 143:break;                          //'o'
-    case 144:potentiometer(CHECK_VALUE);break;//'p'
+    case 144:potentiometer(DEFAULT_MODE);break;//'p'
     case 145:break;                          //'q'
     case 146://'r'---------------------------Record Mode
       recordHandlr(TRIGGER); //recording begins now

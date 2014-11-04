@@ -1,24 +1,95 @@
-//hardware.ino
+//hardware.ino  Copyright Paul Beaudet 2014 See license for reuse info
+//---------------- Haptics / Pagers / Vib motors ------------------------
 #include <Wire.h>
 #include "Adafruit_PWM.h"
-
 Adafruit_PWM pagers = Adafruit_PWM();
 
-//global variables that need a home..
-int PWMintensity = 0; // Adjusts the intensity of the pwm
-int HAPTICTIMING = 200; //ms, haptic display durration; user adjustable
-//--------expermental hardware--------------
-#define BUZZER 11
-#define ADJUST_POT A1
+void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
+{               // might not work when sharing the I2C bus
+  pagers.begin();
+  pagers.setPWMFreq(1600);  // This is the maximum PWM frequency
+  uint8_t twbrbackup = TWBR;// save I2C bitrate
+  // must be changed after calling Wire.begin() (inside pwm.begin())
+  TWBR = 12; // upgrade to 400KHz!   
+}
 
-//----------PINOUT DEFINITIONS-------------------
-byte buttons[] = { 10,9,7,8,5,4,6,A3,A2,A0 };// pin out oppisite to pagers
-// pins can be aligned in software: try to do it in hardware
-#define NUMBUTTONS sizeof(buttons) // up to 16 possible
 #define NUMPAGERS 8 // can use up to 16
-//------------HARDWARE SETUP --------------------------
+void patternVibrate(int pins, int intensityChange = 0)
+{ //set state of all pagers in one function
+  static int intensity = 4095;  // 0 being off and 4095 being most intense
+  if (intensityChange){intensity = intensityChange; return;}
+   
+  for (byte i=0; i<NUMPAGERS; i++) 
+  { // incoming int set bit by bit: high bits: pagers need to be active
+    if (pins & (1 << i)) { pagers.setPWM( i, 0, intensity); }
+    else/*set pager off*/{ pagers.setPWM( i, 0, 0); }
+  }
+}
+
+boolean hapticMessage(byte letter, int spacing = 0) 
+{ // updating function; passing a string sets course of action
+  static boolean touchPause= 0; // pause between displays
+  static int timing = 250; //default timing
+  
+  if(spacing){timing = spacing; return false;}//change timing call
+  
+  if(letter)
+  {
+    ptimeCheck(timing);//set the time for a letter to display
+    patternVibrate(charToPattern(letter));  //start vibrating that letter
+    return false;//why bother checking time... we just set it
+  }
+  //---------- 0 or "monitor" case ------- aka no letter check if done
+  if(ptimeCheck(0))
+  {               //time to "display" a touch / pause elapsed
+    if(touchPause)//given that we are at the pause stage FINAL
+    {             //this case allows for a pause after "display"
+      touchPause=!touchPause; //prep for next letter
+      return true;//Send confirmation this letter has been "played"
+    }
+    else          //durring the letter buzz phase
+    {
+      touchPause=!touchPause;    //flag pause time to start
+      patternVibrate(0);         //stop letter feedback
+      ptimeCheck(timing/2);//set pause time
+    };
+  }
+  return false;  //signals letter in process of being played 
+}
+
+//--------------- Buttons  ---------------
+byte buttons[] = { 10,9,7,8,5,4,6,A3,A2,A0 };// up to 16 possible
+// pins can be aligned in software: try to do it in hardware
+void buttonUp()// it's cold out there, set up the buttons 
+{ //  set every button as an input with internal pull-up resistence
+  for (byte set=0; set < sizeof(buttons); set++)
+  {pinMode(buttons[set], INPUT_PULLUP);}
+}//pull-up -> 20k 5v rail| Pin-> button -> ground:reads low pressed
+
+int buttonSample()
+{ // sample the keys and mask/combine them into an interger/"chord"
+  int sample=0;//return value to be masked
+  for (byte i=0; i < sizeof(buttons); i++)  
+  { // when button pressed              set selected bit in sample high
+    if(digitalRead(buttons[i]) == LOW) {bitWrite(sample, i, 1);}   
+    else                               {bitWrite(sample, i, 0);} 
+  }//otherwise                          set the bit low
+  return sample;
+}// returning and int, allows 16 possible buttons states to be combined
+
+//********** Main chord interpertation function *************
+byte chordLoop(int input) // takes sample of buttons: returns true for press
+{// main progam loop is abstracted here, so it can be switch with other test
+  byte actionableSample= patternToChar(input); //determine chord validity
+  if(actionableSample){patternVibrate(input);} //actuate pagers:if letters
+  else if(!messageHandlr(JOB) && !serialBowl()){patternVibrate(0);}
+  //      except for special printing cases     release:turn pagers off
+  return inputFilter(actionableSample);
+}//            debounce -> check hold -> return ASCII:letter or action code
+
+//------------SERIAL SETUP --------------------------
 void serialInterfaceUp()
-{// all three interfaces are brought up in the ATMEGA32u4 case
+{
   #ifdef UNO
     Serial.begin(9600);// Bluefruit EZ key HID
   #endif
@@ -35,30 +106,6 @@ void serialInterfaceUp()
     bootCheck(); // returns true for boot, full boot takes about 60sec
     bridgeShutdown();// with bridge shutdown serial1 acts as raw shell access
   #endif
-}
-
-void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
-{               // might not work when sharing the I2C bus
-  pagers.begin();
-  pagers.setPWMFreq(1600);  // This is the maximum PWM frequency
-  uint8_t twbrbackup = TWBR;// save I2C bitrate
-  // must be changed after calling Wire.begin() (inside pwm.begin())
-  TWBR = 12; // upgrade to 400KHz!   
-}
-
-void buttonUp()// it's cold out there, set up the buttons 
-{ //  set every button as an input with internal pull-up resistence
-  for (byte set=0;set<NUMBUTTONS;set++){ pinMode(buttons[set], INPUT_PULLUP);}
-}//pull-up -> 20k 5v rail| Pin-> button -> ground:reads low pressed
-
-/********** actuating pagers***************/
-void patternVibrate(int pins)
-{ //set state of all pagers in one function
-  for (byte i=0; i<NUMPAGERS; i++) 
-  { // incoming int set bit by bit: high bits: pagers need to be active
-    if (pins & (1 << i)) { pagers.setPWM( i, 0, PWMintensity); }
-    else/*set pager off*/{ pagers.setPWM( i, 0, 0); }
-  }
 }
 //-------------Writing keys to host----------
 void keyOut(byte keyPress)
@@ -156,22 +203,22 @@ void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
 
 boolean serialBowl()
 { // keep the alphabits from overflowing
-  static boolean printing = false;
-  #ifdef YUN
-    if(hapticMessage(MONITOR_MODE)) // letter played or boot has occurred
+  static boolean printing = false;    //signal activity to outside loop
+  #ifdef YUN                          //only do any of this for the yun
+    if(hapticMessage(MONITOR_MODE))   //letter played or boot has occurred
     {
-      byte incoming = Serial1.read(); 
-      if (incoming == 255){printing = false;} //255 = -1 in byte land
+      byte incoming = Serial1.read(); //read off a byte regardless
+      if (incoming == 255){printing = false;}  //255 = -1 in byte land
       else if (incoming && terminalToggle(1))
       {
-        printing = true;
-        hapticMessage(incoming);
+        printing = true;               //prevents stop case
+        hapticMessage(incoming);       //set incoming byte to be played
         //Keyboard.write(incoming);
-        Serial.write(incoming);
+        Serial.write(incoming);        
       }
     }
-    if(Serial1.available() > 3){Serial1.write(XOFF);}
-    else{Serial1.write(XON);}
+    if(Serial1.available() > 3){Serial1.write(XOFF);}//turn off ash to keep up
+    else{Serial1.write(XON);} //resume output of ash
   #endif
   return printing;
 }
@@ -185,18 +232,8 @@ boolean terminalToggle(boolean returnVar)
   #endif
 }
 
-//---------------Sampling buttons-------------
-int buttonSample()
-{ // sample the keys and mask/combine them into an interger/"chord"
-  int sample=0;//return value to be masked
-  for (byte i=0; i<NUMBUTTONS; i++)  
-  { // when button pressed              set selected bit in sample high
-    if(digitalRead(buttons[i]) == LOW) {bitWrite(sample, i, 1);}   
-    else                               {bitWrite(sample, i, 0);} 
-  }//otherwise                          set the bit low
-  return sample;
-}// returning and int, allows 16 possible buttons states to be combined
 //----------------adjusting settings with pontentiometer---------
+#define ADJUST_POT A1
 #define PWM_ADJUST 4
 #define TIMING_ADJUST 5
 void potentiometer(byte mode)
@@ -208,15 +245,16 @@ void potentiometer(byte mode)
   //monitor mode; check to do adjustments 
   switch(mode)// modes can check pot or switch modes
   {
-    case CHECK_VALUE: potReturn(potValue); break;
+    case DEFAULT_MODE: potReturn(potValue); break;
     case ADJUST_PWM://switch to pwm adjustment
       adjustMode = PWM_ADJUST; potReturn(potValue);break;
     case ADJUST_TIMING://switch to timing adjustment
       adjustMode = TIMING_ADJUST; potReturn(potValue); break;
+    //---------in adjustment mode ------------
     case PWM_ADJUST://mode that does adjusting 
-      PWMintensity = map(potValue, 0, 1023, 0, 4095); break;
+      patternVibrate(0, map(potValue, 0, 1023, 0, 4095)); break;
     case TIMING_ADJUST://mode that does adjusting
-      HAPTICTIMING = map(potValue, 0, 1023, 100, 2000); break; 
+      hapticMessage(0, map(potValue, 0, 1023, 100, 2000)); break; 
   } 
 }
 
@@ -224,6 +262,7 @@ void potReturn(int potValue)
 {
   byte rawNumber = map(potValue,0,1023,0,9);
   keyOut(rawNumber + 48); // turn the raw number into an ascii one
-  delay(HAPTICTIMING); //give user time to see
-  keyOut(BACKSPACE);
+  hapticMessage(rawNumber + 48); // start feedback
+  while(!hapticMessage(MONITOR_MODE)){;} //break loop when letter is finished
+  keyOut(BACKSPACE); //key message
 }
