@@ -27,7 +27,7 @@ byte spacerTimer(byte reset)
 
 boolean ptimeCheck(uint32_t durration)
 {                                 // used for checking and setting timer
-  static uint32_t ptimer[2] = { };// create timer to modify
+  static uint32_t ptimer[2]={1,0};// create timer to modify default check=true
   if(durration)                   // given param other than zero
   {                               // time is being set
     ptimer[1]=durration;          // set durration
