@@ -15,7 +15,7 @@ Current Development is being carried out on the Yun. Wired connectivity is achie
 
 Note the the EZ-Key is a great device for personal convenience once debugging is done. However the CSR component which powers the bluetooth breakout is closed to licensed customers. This limits future application in Neotype. The spirit of the project is open and where as, sometimes that notion can find compromise in a "toaster like" component, this is one area where nuts and bolts access is important. 
 
-Features specific to the Yun involved access to its Linux "side". Wifi is more of an added bonus that may come in handy as development continues. When stacking shields on the Yun be sure to pick up a spare set of Uno stacking headers to give extra clearance for the Ethernet and USB ports. It will work without, but barely.
+Features specific to the Yun involved access to its Linux "side". Wifi is more of an added bonus that may come in handy as development continues. When stacking shields on the Yun be sure to pick up a spare set of [Uno stacking headers](https://www.adafruit.com/product/85)  to give extra clearance for the Ethernet and USB ports. A second for the shield I found helpful. It will work without, be sure to insulate the ports from open leads at the bottom of the shield.
 
 A serial only approach to connectivity is being considered. This will will involve an Linux side application that reports key event to X or even better reports key events to a synergy server. This could possibly change the hardware requirements and possibilities significantly. 
 
