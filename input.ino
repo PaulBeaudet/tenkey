@@ -1,15 +1,5 @@
-/*input.ino**********debouncing and chord interpertation******
-Gives fine grain control over every posible input case
-allowing for differant timings depending on the chords
+//input.ino- Copyright Paul Beaudet 2014 -See License for reuse info
 
-        FLOW
-main call from loop -> inputFilter(input) returns actuations from raw samples
-     Character cases : differant button behave in unique ways
-     homerow   : keys count as "pressed" upon 
-Note about spacerTimer
-decide when to reset in -> inputFilter
-poll inside of ----------> homerow, backActions, spaceActions, chordActions
-*************************************************************/
 byte inputFilter(byte input)
 { // prevent output from being the same as the last
   static byte lastEvent = 0;
@@ -123,22 +113,15 @@ byte holdFilter(byte input)
 **************************/
 byte homerow(byte input, byte progress)
 {
-  switch(progress)
-  {
-    case 7:  return input;// typical print
-    case 40: return BACKSPACE;// delete to make room for a cap
-    case 45: return input-SPACEBAR;//downshift subtract 32 to get caps
-    case 80: return BACKSPACE;//delete char: prep for special commands
-    case 85: return input+SPACEBAR;//upshift: special commands
-    default: return 0;
-  }
+  if(progress == 7) {return input;}
+  return holdTiming(input, progress);
 }
 
 byte oneException(byte progress)
 {
-  if(progress==7) {return '1';}
-  else if(progress == 80){return BACKSPACE;}
-  else if(progress == 85){return 129;} // signal a hold
+  if(progress==7)   {return '1';}
+  if(progress == 80){return BACKSPACE;}
+  if(progress == 85){return 129;} // signal a hold
   return 0;
 }
 
@@ -158,13 +141,15 @@ byte spaceActions(byte progress)
 
 byte chordActions(byte input, byte progress)
 {
-  switch(progress)
-  {
-    case 2:  return input;
-    case 40: return BACKSPACE;
-    case 45: return input-SPACEBAR;
-    case 80: return BACKSPACE;
-    case 85:return input+SPACEBAR;
-    default: return 0;
-  }
+  if(progress == 2) {return input;}
+  return holdTiming(input, progress);
+}
+
+byte holdTiming(byte input, byte progress)
+{
+  if(progress == 40){return BACKSPACE;}
+  if(progress == 45){return input-SPACEBAR;}
+  if(progress == 80){return BACKSPACE;}
+  if(progress == 85){return input+SPACEBAR;}
+  return 0;
 }
