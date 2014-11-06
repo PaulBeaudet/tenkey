@@ -27,8 +27,6 @@
 #define XON            17 // control_Q resume terminal output
 #define XOFF           19 // control_S stop terminal output
 
-#include<avr/pgmspace.h>//explicitly stated read only memory
-
 void setup()//setup the needed hardware  
 {
   pagersUp();          // hardware.ino: brings vibrating motor interface up

@@ -26,8 +26,7 @@ byte inputFilter(byte input)
       if(uniAfterMulti(event, lastEvent)){output = 0;}//unless uniAfterMulti
     }   
   } // if the input is zero and enough time has elapsed reset the condition
-  else if (!input && spacerTimer(0)>10) // timer counts pause time too
-  {lastEvent = 0;}
+  else if (!input && spacerTimer(0)>10){lastEvent = 0;} 
   //button has been let go long enough to discount odd stuff
   return output; 
 }
@@ -79,6 +78,7 @@ byte holdFilter(byte input)
       case BACKSPACE: output = backActions(spacerTimer(0));break;
       case SPACEBAR:  output = spaceActions(spacerTimer(0));break;
       //   detect homerow chars AKA unigrams
+      case '1': output = oneException(spacerTimer(0)); break;
       case 'a':// |
       case 'n':// |
       case 'o':// |
@@ -132,6 +132,14 @@ byte homerow(byte input, byte progress)
     case 85: return input+SPACEBAR;//upshift: special commands
     default: return 0;
   }
+}
+
+byte oneException(byte progress)
+{
+  if(progress==7) {return '1';}
+  else if(progress == 80){return BACKSPACE;}
+  else if(progress == 85){return 129;} // signal a hold
+  return 0;
 }
 
 byte backActions(byte progress)
