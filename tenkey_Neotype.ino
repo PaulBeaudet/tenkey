@@ -3,19 +3,7 @@
 * Keyer that recieves and transmits text information from its user
 * This program is free open source software: See licenses.txt to understand 
   reuse rights of any file associated with this project
--------------------------------------------------------------------
-* Hardware discription: Arduino(atmega32u4) or uno(w/bluefruit EZKey)
-* Adafruit_PWMServoDriver shield drives 8 pager moters
-* ten keys take a input, 8 of which register chords
-* 8 Pagers sit on top of the chord keys to be able to feed back letters
-* depends on an adafruit I2C multiplex driver
-More detailed discription: arduinoMicropins.txt 
-below is platform choice, comment in if using, out if not using
-**************** COMMENT IN ARDUINO BOARD HERE ************************/
-//#define LEO // Arduino Micro or Leonardo USB HID or Bluefruit
-#define YUN //Bluefruit is only compatible with yun via software serial 
-#define YUN_BOOT_OUTPUT true // mark true to see yun boot msgs on serial
-//#define UNO   // Arduinos using the 328p + bluefruit EZ-key HID
+********* See readme.md for hardware discription **************/
 
 #define MONITOR_MODE   0
 #define START_INTERUPT 1 // removes output, zeros play point: messageHandlr

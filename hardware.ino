@@ -1,4 +1,10 @@
 //hardware.ino  Copyright Paul Beaudet 2014 See license for reuse info
+//depends on timing.ino, wire and Adafruit_PWM
+// ------------ BOARD SELECT ----- comment in used board
+//#define LEO // Arduino Micro or Leonardo USB HID or Bluefruit
+#define YUN //Bluefruit is only compatible with yun via software serial 
+#define YUN_BOOT_OUTPUT true // mark true to see yun boot msgs on serial
+//#define UNO   // Arduinos using the 328p + bluefruit EZ-key HID
 //---------------- Haptics / Pagers / Vib motors ------------------------
 #include <Wire.h>
 #include "Adafruit_PWM.h"
@@ -127,23 +133,6 @@ void keyOut(byte keyPress)
   #endif
 }
 
-void stickyHandlr(byte keyPress) // TODO intergrate
-{
-  static boolean sticky = false;
-  
-  if(keyPress > 127 && keyPress < 136) //ctrl, alt, shift, gui
-  {
-    Keyboard.press(keyPress);
-    sticky = true;
-  }
-  if(sticky && keyPress == SPACEBAR)//stick release cases
-  {
-    Keyboard.releaseAll();
-    sticky = false;
-    return;       
-  }
-}
-
 void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
 {// more deployable macro triger, would be nice if defaults could be used
   #ifdef LEO
@@ -213,7 +202,7 @@ boolean serialBowl()
       {
         printing = true;               //prevents stop case
         hapticMessage(incoming);       //set incoming byte to be played
-        //Keyboard.write(incoming);
+        Keyboard.write(incoming);
         Serial.write(incoming);        
       }
     }
@@ -241,21 +230,22 @@ void potentiometer(byte mode)
   static byte adjustMode = PWM_ADJUST;
   int potValue = analogRead(ADJUST_POT);
   
-  if(mode == MONITOR_MODE){mode=adjustMode;}
-  //monitor mode; check to do adjustments 
-  switch(mode)// modes can check pot or switch modes
+  if(mode == MONITOR_MODE){mode=adjustMode;}//check to do adjustments 
+  if(mode == DEFAULT_MODE){potReturn(potValue);}
+  else if (mode == ADJUST_PWM)
   {
-    case DEFAULT_MODE: potReturn(potValue); break;
-    case ADJUST_PWM://switch to pwm adjustment
-      adjustMode = PWM_ADJUST; potReturn(potValue);break;
-    case ADJUST_TIMING://switch to timing adjustment
-      adjustMode = TIMING_ADJUST; potReturn(potValue); break;
-    //---------in adjustment mode ------------
-    case PWM_ADJUST://mode that does adjusting 
-      patternVibrate(0, map(potValue, 0, 1023, 0, 4095)); break;
-    case TIMING_ADJUST://mode that does adjusting
-      hapticMessage(0, map(potValue, 0, 1023, 100, 2000)); break; 
-  } 
+    adjustMode = PWM_ADJUST;
+    potReturn(potValue);
+  }
+  else if (mode == ADJUST_TIMING)
+  {
+    adjustMode = TIMING_ADJUST;
+    potReturn(potValue);
+  }
+  else if (mode == PWM_ADJUST)
+  {patternVibrate(0, map(potValue, 0, 1023, 0, 4095));}
+  else if (mode == TIMING_ADJUST)
+  {hapticMessage(0, map(potValue, 0, 1023, 100, 2000));}
 }
 
 void potReturn(int potValue)
