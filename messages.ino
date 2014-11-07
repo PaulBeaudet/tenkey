@@ -78,34 +78,35 @@ void listenForMessage()
   }
 }
 //********** message recording *********************** 
-
 boolean recordHandlr(byte mode)
 {
-  static boolean active = 0;
-  static byte recordLength = 0;
+  static boolean active = 0; // var for the outside world to undersand state
+  static byte recordLength = 0; // Keep track 
   
-  switch(mode)
-  {
-    case MONITOR_MODE: return active;//probes if recording to prevent overflow
-    case TRIGGER: //1
-      active = !active;
-      if(active){fastToast("recording");} // flash recording warning
-      else{recordLength=0;}
-      break;
-    case CAT_OUT: //2
-      active = 0;
-      removeThisMany(recordLength);
-      recordLength = 0;
-      break;
-    default: //letter is feed into the record
-      if(active)
-      {
-        messageHandlr(mode);
-        if(mode == BACKSPACE){recordLength--;}
-        else if (mode > 127){;}//nonprinting char skip
-        else{recordLength++;}
-      } 
-  }return 0;
+  if(mode == MONITOR_MODE){return active;}
+  if(mode == TRIGGER)
+  {// trigger/toggle recording step
+    active = !active; // toggle recording state
+    if(active){fastToast("rec");} // flash recording warning
+    else // in the case recording has been toggled inactive
+    {
+      removeThisMany(recordLength);recordLength=0; // remove recording
+      messageHandlr(NEW_LINE); // make sure recording is closed
+    }
+  }
+  else if(mode == RECORD)
+  { // finish recording step
+    active = false; // end activity
+    removeThisMany(recordLength);recordLength=0; // remove recording
+  }
+  else if(active) // catches all other values accept for the mode ones
+  { // record step: passes incoming letter to the messageHandlr
+    messageHandlr(mode);
+    if(mode == BACKSPACE){recordLength--;}
+    else if (mode > 127){;}//nonprinting char skip
+    else{recordLength++;}
+  }
+  return false;
 }
 //****************Output Functions ****************************
 
@@ -115,6 +116,8 @@ void fastToast(char message[])//quick indication message
   delay(5);
   for(byte i=0;message[i];i++){keyOut(BACKSPACE);}
 }
+
+//TODO combine fast toast and alapha hint in to a message
 
 void alphaHint()
 {
