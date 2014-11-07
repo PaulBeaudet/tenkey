@@ -130,7 +130,7 @@ byte chordLoop(int input) // takes sample of buttons: returns true for press
 {// main progam loop is abstracted here, so it can be switch with other test
   byte actionableSample= patternToChar(input); //determine chord validity
   if(actionableSample){patternVibrate(input);} //actuate pagers:if letters
-  else if(!messageHandlr(JOB) && !serialBowl()){patternVibrate(0);}
+  else if(!messageHandlr(MONITOR_MODE) && !serialBowl()){patternVibrate(0);}
   //      except for special printing cases     release:turn pagers off
   return inputFilter(actionableSample);
 }//            debounce -> check hold -> return ASCII:letter or action code
@@ -153,6 +153,7 @@ void serialInterfaceUp()
     // make sure linux has booted and shutdown bridge
     bootCheck(); // returns true for boot, full boot takes about 60sec
     bridgeShutdown();// with bridge shutdown serial1 acts as raw shell access
+    Serial.write('>');//ready signal 
   #endif
 }
 //-------------Writing keys to host----------

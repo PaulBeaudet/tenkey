@@ -4,16 +4,11 @@
 * This program is free open source software: See licenses.txt to understand 
   reuse rights of any file associated with this project
 ********* See readme.md for hardware discription **************/
-
-#define MONITOR_MODE   0
-#define START_INTERUPT 1 // removes output, zeros play point: messageHandlr
+#define MONITOR_MODE   0 // goto default behavior for multi-mode functions
 #define TRIGGER        1 // set enter key to press : enterBehavior()
 #define DEFAULT_MODE   1 // outputFilter: regular letters, potentiometer check
-#define CAT_OUT        2 // set message to play : messageHandlr
 #define NUMBERS_MODE   2 // outputFilter: Numbers
-#define RECORD         2 // enterBehavior() record command
-#define MOVEMENT_MODE  3 // outputFilter() Movement
-#define JOB            4 // messageHandlr "is a job set?" argument
+#define RECORD_CAT     2 // enterBehavior() cat or record or record cat
 #define ADJUST_PWM     2 // potentiometer()
 #define ADJUST_TIMING  3 // potentiometer()
 #define LINE_SIZE      80   //cause why should a line be longer?
@@ -22,8 +17,8 @@
 #define TAB_KEY        9
 #define SPACEBAR       32
 #define CARIAGE_RETURN 13
-#define L_THUMB        256  // input data
-#define R_THUMB        512
+#define L_THUMB        256  // int value of key data
+#define R_THUMB        512  // int value of key data
 #define XON            17 // control_Q resume terminal output
 #define XOFF           19 // control_S stop terminal output
 
@@ -36,7 +31,6 @@ void setup()//setup the needed hardware
 
 void loop() 
 {
-   byte messageMode = MONITOR_MODE; //default to Monitor
    byte pressState = chordLoop(buttonSample());//<--important part
    // captures the current state of the buttons
    if(pressState)
@@ -44,15 +38,12 @@ void loop()
      recordHandlr(pressState);//records presses to messageHandlr given active
      //note: needs to be before outputFilter, for the sake of new lines
      outputFilter(pressState);//handles output modes
-     if (pressState < 128 && !recordHandlr(MONITOR_MODE))
-     {// any macro      and  no recording 
-       messageMode = START_INTERUPT;
-     }//prevents macros from interupting messageHandlr
-   }
+     if (pressState < 128){messageHandlr(TRIGGER);} //letters can interupt
+     else{messageHandlr(MONITOR_MODE);} // otherwise read messages as available
+    }//macros are exempt from interupting messageHandlr
    //EXTRA FEATURES 
    listenForMessage();// grab potential messages over usb serial
    potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
-   messageHandlr(messageMode);//async message mangment-interupt with keystroke
    //Yun specific
    serialBowl(); // check: terminal responses
 }

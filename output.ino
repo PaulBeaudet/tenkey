@@ -1,38 +1,13 @@
 //output.ino- Copyright Paul Beaudet 2014 -See License for reuse info
-
-void enterBehavior(byte mode) // this function handles enter states
-{ 
-  static byte triggerType = 0;
-  switch(mode)
-  {
-    case TRIGGER://1
-    switch(triggerType) // in the case enter is pressed
-    {
-      case 0: keyOut(CARIAGE_RETURN); break;
-      case RECORD://2 
-        triggerType = 0; // set back to normal behavior
-        recordHandlr(CAT_OUT);   // finish the recording
-        break; // record
-    }
-    break;
-    // in the case parameters are being set
-    case RECORD: 
-      if(triggerType == RECORD) {triggerType=0;}// in this way
-      else{triggerType = RECORD;}               // record mode toggles
-      break;// set record mode
-  }
-}
-
 void outputFilter(byte letter)
 {
   switch(letter)//takes in key letter
   { // execute special compand basd on long hold
     case 0: break;
-    case CARIAGE_RETURN: enterBehavior(TRIGGER); break;
     case 129:convertionMode(TRIGGER);break;//'a' toggle numbers mode
     case 130: 
       if (recordHandlr(MONITOR_MODE)){break;}    // collision prevention
-      messageHandlr(CAT_OUT); break;         //'b' print buffer
+      messageHandlr(RECORD_CAT); break;       //'b' tell cat to print buffer
     case 131:comboPress(KEY_LEFT_CTRL,KEY_LEFT_ALT,0);break;//'c'
     //Change layout - command will vary computer to computer 
     case 132:break;                          //'d'
@@ -51,7 +26,6 @@ void outputFilter(byte letter)
     case 145:break;                          //'q'
     case 146://'r'---------------------------Record Mode
       recordHandlr(TRIGGER); //recording begins now
-      enterBehavior(RECORD); //enter will now submit a recording
       break;          //'r'
     case 147: potentiometer(ADJUST_TIMING);break; //'s' haptic display speed
     case 148://'t'---------------------------Terminal Mode 
