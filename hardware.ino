@@ -32,20 +32,42 @@ void patternVibrate(int pins, int intensityChange = 0)
   }
 }
 
+
 boolean hapticMessage(byte letter, int spacing = 0) 
 { // updating function; passing a string sets course of action
-  static boolean touchPause= 0; // pause between displays
+  static boolean animated = false; // animated or typical letter?
   static int timing = 250; //default timing
   
   if(spacing){timing = spacing; return false;}//change timing call
   
   if(letter)
   {
-    ptimeCheck(timing);//set the time for a letter to display
-    patternVibrate(charToPattern(letter));  //start vibrating that letter
+    byte validPatern = charToPattern(letter);
+    if(validPatern)
+    {
+      ptimeCheck(timing);
+      patternVibrate(validPatern);
+      animated = false;
+    }
+    byte validAnimation = getFrame(0, letter);
+    if(validAnimation)
+    {
+      int adjustedTime = timing / 2 + timing;
+      ptimeCheck(adjustedTime/NUMPAGERS); // a fraction of alotted time
+      patternVibrate(validAnimation);
+      animated = true;
+    } // in this way invalid entries are skipped message reads true for such
     return false;//why bother checking time... we just set it
   }
   //---------- 0 or "monitor" case ------- aka no letter check if done
+  if (animated){return animatedProcess(timing);}
+  else {return typicalLetter(timing);}
+}
+
+boolean typicalLetter(int timing)
+{
+  static boolean touchPause= 0; // pause between displays
+  
   if(ptimeCheck(0))
   {               //time to "display" a touch / pause elapsed
     if(touchPause)//given that we are at the pause stage FINAL
@@ -60,7 +82,27 @@ boolean hapticMessage(byte letter, int spacing = 0)
       ptimeCheck(timing/2);//set pause time
     };
   }
-  return false;  //signals letter in process of being played 
+  return false;  //signals letter in process of being played
+}
+
+boolean animatedProcess(int timing)
+{
+  static byte frame = 0;
+ 
+  if(ptimeCheck(0))//if timer has been tripped
+  {
+    frame++;          //zero frame is accounted for in hapticMessage
+    if(frame == NUMPAGERS) // reached maxium number of frames
+    {
+      frame = 0;     //Start back at frame zero
+      getFrame(0,1); //reset framer
+      return true;   // animation complete
+    }
+    patternVibrate(getFrame(frame)); //start to play frame
+    int adjustedTime = timing / 2 + timing;
+    ptimeCheck(adjustedTime/NUMPAGERS);    //devides frame increments
+  }
+  return false;
 }
 
 //--------------- Buttons  ---------------
@@ -203,7 +245,7 @@ boolean serialBowl()
         printing = true;               //prevents stop case
         hapticMessage(incoming);       //set incoming byte to be played
         Keyboard.write(incoming);
-        Serial.write(incoming);        
+        //Serial.write(incoming);        
       }
     }
     if(Serial1.available() > 3){Serial1.write(XOFF);}//turn off ash to keep up

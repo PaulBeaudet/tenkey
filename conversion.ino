@@ -80,3 +80,25 @@ byte charToPattern(byte letter)
   }// TODO return int with animation signals to differ parodies
   return 0; // no match case
 }
+//----------Animations---------------
+const byte frameStore[] PROGMEM =
+{// 0 possition identifies type; other possitions are frames
+  32, 128, 64, 32, 16, 8, 4, 2, 1, 
+};
+
+byte getFrame(byte part, byte type = 0)
+{
+  static byte inProgressType = 0;
+  
+  if(type == SPACEBAR) // this the only currently supported animation
+  {
+    inProgressType = 1;
+  }
+  if(type == 1){inProgressType = 0;}//finish signal prep for next animation
+  //TODO make room for future animations by allowing the type to 
+  // change the first dimention in a 2d array
+
+  if (inProgressType){return pgm_read_byte(&frameStore[part + 1]);}
+  return 0;
+}
+
