@@ -39,6 +39,8 @@ boolean convertionMode(boolean toggle = 0) //toggles numbers or letters mode
   return lettersMode;
 }
 
+#define L_THUMB        256  // int value of key data
+#define R_THUMB        512  // int value of key data
 byte patternToChar(int base) //returns the char value of a raw chord
 {// some convertions can explicitly imediately be returned 
   if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars

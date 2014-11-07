@@ -17,8 +17,6 @@
 #define TAB_KEY        9
 #define SPACEBAR       32
 #define CARIAGE_RETURN 13
-#define L_THUMB        256  // int value of key data
-#define R_THUMB        512  // int value of key data
 #define XON            17 // control_Q resume terminal output
 #define XOFF           19 // control_S stop terminal output
 
