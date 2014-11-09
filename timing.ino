@@ -1,6 +1,4 @@
-/*****Timing Functions*********
-*******************************/
-
+//timing.ino -- Copyright Paul Beaudet 2014 See license for reuse info
 byte spacerTimer(byte reset)
 {
     #define DELAYTIME 1 //the delay time corisponds to action values
