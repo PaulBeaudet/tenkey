@@ -29,19 +29,42 @@ void setup()//setup the needed hardware
 
 void loop() 
 {
-   byte pressState = chordLoop(buttonSample());//<--important part
-   // captures the current state of the buttons
-   if(pressState)
-   {
-     recordHandlr(pressState);//records presses to messageHandlr given active
-     //note: needs to be before outputFilter, for the sake of new lines
-     outputFilter(pressState);//handles output modes
-     if (pressState < 128){messageHandlr(TRIGGER);} //letters can interupt
-     else{messageHandlr(MONITOR_MODE);} // otherwise read messages as available
-    }//macros are exempt from interupting messageHandlr
-   //EXTRA FEATURES 
-   listenForMessage();// grab potential messages over usb serial
-   potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
-   //Yun specific
-   serialBowl(); // check: terminal responses
+  byte pressState = chordLoop(buttonSample());//<--important part
+  // captures the current state of the buttons
+  if(pressState)
+  {   
+    if (pressState < 128) //if letter press state
+    {
+      recordHandlr(pressState);//records presses to messageHandlr given active
+      keyOut(pressState);      //actuate the press as a keystroke
+      messageHandlr(TRIGGER);  //letters can interupt
+    } 
+    else // if a macro pressState
+    {
+      macros(pressState);
+      messageHandlr(MONITOR_MODE);
+    } // otherwise read messages as available
+  }//macros are exempt from interupting messageHandlr
+  //EXTRA FEATURES 
+  listenForMessage();// grab potential messages over usb serial
+  potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
+  //Yun specific
+  serialBowl(); // check: terminal responses
+}
+
+//-- Special macro functions 
+void macros(byte letter)
+{
+  if     (letter == 'a' + SPACEBAR){convertionMode(TRIGGER);}//toggle numbers
+  else if(letter == 'b' + SPACEBAR) // play message buffer
+  {
+    if(recordHandlr(MONITOR_MODE)){;}
+    else{messageHandlr(RECORD_CAT);}
+  }
+  else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
+  else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);} //Toggle to pwm
+  else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
+  else if(letter == 'r' + SPACEBAR){recordHandlr(TRIGGER);}//start recording
+  else if(letter == 's' + SPACEBAR){potentiometer(ADJUST_TIMING);}//toggle 
+  else if(letter == 't' + SPACEBAR){terminalToggle(0);}//toggle terminal shell
 }

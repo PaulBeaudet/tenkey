@@ -30,9 +30,9 @@ const byte numberParody[] PROGMEM = // option shift to numbers
 // N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z  //39=single quote
   '2','3','+','%','7','8','4','0','"', 39,'x',',','=',//92=slash
 };
-#define PATTERNSIZE 26 //sizeof(chordPatterns) //14,936
+#define PATTERNSIZE 26 //sizeof(chordPatterns)
 
-boolean convertionMode(boolean toggle = 0) //toggles numbers or letters mode
+boolean convertionMode(boolean toggle) //toggles numbers or letters mode
 {
   static boolean lettersMode = true;
   if(toggle){lettersMode = !lettersMode;}
@@ -60,7 +60,7 @@ byte patternToChar(int base) //returns the char value of a raw chord
       {// 256 = 01-0000-0000 // if(9th bit is high) 
         return pgm_read_byte(&backParody[i]);
       }
-      if(convertionMode()){return 'a' + i;}
+      if(convertionMode(MONITOR_MODE)){return 'a' + i;}
       else{return pgm_read_byte(&numberParody[i]);}
     }// return plain char based on possition in the array given no shift
   }
