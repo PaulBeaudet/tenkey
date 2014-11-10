@@ -161,9 +161,10 @@ void keyOut(byte keyPress)
 {
   #ifdef UNO
     if(keyPress > 128){return;} // these cases need to be translated for UNO
+    Serial.write(keyPress); // debug or bluefruit
   #endif
   
-  Serial.write(keyPress); // debug or bluefruit
+  //Serial.write(keyPress); // debug or bluefruit
   byte HIDready = keyPress;
   if(keyPress==CARIAGE_RETURN){HIDready=KEY_RETURN;keyPress = NEW_LINE;}
   
@@ -193,6 +194,8 @@ void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
 }
 
 //---------- YUN specific --------------
+#define XON            17 // control_Q resume terminal output
+#define XOFF           19 // control_S stop terminal output
 #ifdef YUN
   void bridgeShutdown()
   {

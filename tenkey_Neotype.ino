@@ -17,8 +17,6 @@
 #define TAB_KEY        9
 #define SPACEBAR       32
 #define CARIAGE_RETURN 13
-#define XON            17 // control_Q resume terminal output
-#define XOFF           19 // control_S stop terminal output
 
 void setup()//setup the needed hardware  
 {
