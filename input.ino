@@ -1,5 +1,4 @@
 //input.ino- Copyright Paul Beaudet 2014 -See License for reuse info
-
 byte inputFilter(byte input)
 { // prevent output from being the same as the last
   static byte lastEvent = 0;
@@ -38,48 +37,16 @@ byte holdFilter(byte input)
   byte output = 0;// output defaults to zero
   
   if (input != lastInput){spacerTimer(1);}// given change reset clock
-  else // if the current input is consitent with the last
-    { // check how long the input has been pressed
-    switch(input)
-    {//
-      case 0: break; // input is zero? great that is what output defaults to!
-      //   detect special chars
-      case CARIAGE_RETURN: if(spacerTimer(0)==1){output = input;}break;
-      case BACKSPACE: output = backActions(spacerTimer(0));break;
-      case SPACEBAR:  output = spaceActions(spacerTimer(0));break;
-      //   detect homerow chars AKA unigrams
-      case '1': output = oneException(spacerTimer(0)); break;
-      case 'a':// |
-      case 'n':// |
-      case 'o':// |
-      case 't':// |
-      case 'h':// |
-      case 'e':// |
-      case 'r':// v
-      case 's': output = homerow(input, spacerTimer(0)); break;
-      // detect bi and quad-gram situations 
-      case 'b':
-      case 'c':
-      case 'd':
-      case 'f':
-      case 'g':
-      case 'i':
-      case 'j':
-      case 'k':
-      case 'l':
-      case 'm':
-      case 'p':
-      case 'q':
-      case 'u':
-      case 'v':
-      case 'w':
-      case 'x':
-      case 'y':
-      case 'z':output = chordActions(input, spacerTimer(0));break; 
-      //special character situations (<91)
-      default: if(spacerTimer(0)==1){output = input;}break;    
-    }
-  }
+  else if (input)// if the current input is consitent with the last
+  { // check how long the input has been pressed
+    if(input == BACKSPACE)    {output = backActions(spacerTimer(0));}
+    else if(input == SPACEBAR){output = spaceActions(spacerTimer(0));}
+    else if(input == '1')     {output = oneException(spacerTimer(0));}
+    else if(isHomerow(input)) {output = homerow(input, spacerTimer(0));}
+    else if(input < 127 && input > 95) //multi key letter presses
+                              {output = chordActions(input, spacerTimer(0));}
+    else if(spacerTimer(0) == 1){output = input;} //outside cases play
+  }                                               // on first step
   lastInput = input;
   return output;
 }
