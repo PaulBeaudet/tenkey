@@ -24,30 +24,10 @@ byte inputFilter(byte input)
 boolean uniAfterMulti(byte currentInput, byte lastInput)
 { // was the last event a uni-gram? if so 
   boolean lastWasUni = false;//guilty till proven inocent
-  switch(lastInput)
-  {
-    case 'a':
-    case 'n':
-    case 'o':
-    case 't':
-    case 'h':
-    case 'e':
-    case 'r':
-    case 's': lastWasUni = true;
-  }
-  if (lastWasUni == false)
-  {
-    switch(currentInput)
-    {
-      case 'a':
-      case 'n':
-      case 'o':
-      case 't':
-      case 'h':
-      case 'e':
-      case 'r':
-      case 's': return true; // uni followed by a bi,tri,or Quad gram
-    } // this is honestly and unlikey case within a small time frame
+  if(isHomerow(lastInput)){lastWasUni = true;}
+  else // given last input was a multi
+  {    // check if current press was on the homerow
+    if (isHomerow(currentInput)){return true;} //signal true if uni after multi
   }
   return false;
 }

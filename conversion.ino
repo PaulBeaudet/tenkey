@@ -104,3 +104,14 @@ byte getFrame(byte part, byte type = 0)
   return 0;
 }
 
+// ------- contextual --------------
+const byte homeRow[] PROGMEM = {'a','n','o','t','h','e','r','s',};
+
+boolean isHomerow(byte letter)
+{
+  for(byte i = 0; i < 8; i++)
+  {
+    if (letter == pgm_read_byte(&homeRow[i])){return true;}
+  }
+  return false;
+}
