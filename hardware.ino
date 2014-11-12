@@ -24,11 +24,13 @@ void patternVibrate(int pins, int intensityChange = 0)
 { //set state of all pagers in one function
   static int intensity = 4095;  // 0 being off and 4095 being most intense
   if (intensityChange){intensity = intensityChange; return;}
-   
+  
+  byte j = 7; 
   for (byte i=0; i<NUMPAGERS; i++) 
   { // incoming int set bit by bit: high bits: pagers need to be active
-    if (pins & (1 << i)) { pagers.setPWM( i, 0, intensity); }
-    else/*set pager off*/{ pagers.setPWM( i, 0, 0); }
+    if (pins & (1 << i)) { pagers.setPWM( j, 0, intensity); }
+    else/*set pager off*/{ pagers.setPWM( j, 0, 0); }
+    j--;
   }
 }
 
@@ -106,7 +108,7 @@ boolean animatedProcess(int timing)
 }
 
 //--------------- Buttons  ---------------
-byte buttons[] = { 10,9,7,8,5,4,6,A3,A2,A0 };// up to 16 possible
+byte buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
 // pins can be aligned in software: try to do it in hardware
 void buttonUp()// it's cold out there, set up the buttons 
 { //  set every button as an input with internal pull-up resistence
