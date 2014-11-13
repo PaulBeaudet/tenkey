@@ -25,12 +25,12 @@ void patternVibrate(int pins, int intensityChange = 0)
   static int intensity = 4095;  // 0 being off and 4095 being most intense
   if (intensityChange){intensity = intensityChange; return;}
   
-  byte j = 7; 
+  byte j = 7; // set number for oppisite direction, if forward remove
   for (byte i=0; i<NUMPAGERS; i++) 
   { // incoming int set bit by bit: high bits: pagers need to be active
-    if (pins & (1 << i)) { pagers.setPWM( j, 0, intensity); }
-    else/*set pager off*/{ pagers.setPWM( j, 0, 0); }
-    j--;
+    if (pins & (1 << i)) { pagers.setPWM( j, 0, intensity); }//<--- j to i
+    else/*set pager off*/{ pagers.setPWM( j, 0, 0); }//change j to i if forward
+    j--;// remove if forward oriented
   }
 }
 
@@ -219,6 +219,7 @@ void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
         bootHandler(YUN_BOOT_OUTPUT);
         booting = true;    //buffer filled before user interaction was possible
       }
+      if(inputFilter(patternToChar(buttonSample())) == 's' && !booting){break;}
     }                      // timer returns true when finished exiting loop
     if (booting)
     {
