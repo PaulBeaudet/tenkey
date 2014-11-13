@@ -1,14 +1,8 @@
 //hardware.ino  Copyright Paul Beaudet 2014 See license for reuse info
 //depends on timing.ino, wire and Adafruit_PWM
-// ------------ BOARD SELECT ----- comment in used board
-//#define LEO // Arduino Micro or Leonardo USB HID or Bluefruit
-#define YUN //Bluefruit is only compatible with yun via software serial 
-#define YUN_BOOT_OUTPUT true // mark true to see yun boot msgs on serial
-//#define UNO   // Arduinos using the 328p + bluefruit EZ-key HID
+
 //---------------- Haptics / Pagers / Vib motors ------------------------
-#include <Wire.h>
-#include "Adafruit_PWM.h"
-Adafruit_PWM pagers = Adafruit_PWM();
+Adafruit_PWM pagers = Adafruit_PWM();// create pagers object
 
 void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
 {               // might not work when sharing the I2C bus
@@ -19,13 +13,12 @@ void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
   TWBR = 12; // upgrade to 400KHz!   
 }
 
-#define NUMPAGERS 8 // can use up to 16
 void patternVibrate(int pins, int intensityChange = 0)
 { //set state of all pagers in one function
   static int intensity = 4095;  // 0 being off and 4095 being most intense
   if (intensityChange){intensity = intensityChange; return;}
   
-  byte j = 7; // set number for oppisite direction, if forward remove
+  byte j = COUNTBACKPAGERS; // For oppisite direction, if forward remove
   for (byte i=0; i<NUMPAGERS; i++) 
   { // incoming int set bit by bit: high bits: pagers need to be active
     if (pins & (1 << i)) { pagers.setPWM( j, 0, intensity); }//<--- j to i
@@ -33,7 +26,6 @@ void patternVibrate(int pins, int intensityChange = 0)
     j--;// remove if forward oriented
   }
 }
-
 
 boolean hapticMessage(byte letter, int spacing = 0) 
 { // updating function; passing a string sets course of action
@@ -108,8 +100,6 @@ boolean animatedProcess(int timing)
 }
 
 //--------------- Buttons  ---------------
-byte buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
-// pins can be aligned in software: try to do it in hardware
 void buttonUp()// it's cold out there, set up the buttons 
 { //  set every button as an input with internal pull-up resistence
   for (byte set=0; set < sizeof(buttons); set++)
@@ -164,17 +154,13 @@ void keyOut(byte keyPress)
   #ifdef UNO
     if(keyPress > 128){return;} // these cases need to be translated for UNO
     Serial.write(keyPress); // debug or bluefruit
-  #endif
-  
-  //Serial.write(keyPress); // debug or bluefruit
-  byte HIDready = keyPress;
-  if(keyPress==CARIAGE_RETURN){HIDready=KEY_RETURN;keyPress = NEW_LINE;}
-  
-  #ifdef LEO 
-    Keyboard.write(HIDready);
+  #endif  
+  #if defined(LEO) || defined(YUN)
+    if(keyPress == CARIAGE_RETURN){Keyboard.write(KEY_RETURN);} 
+    else {Keyboard.write(keyPress);}
   #endif
   #ifdef YUN
-    Keyboard.write(HIDready);
+    if(keyPress == CARIAGE_RETURN){keyPress = NEW_LINE;}//linux return call
     if(terminalToggle(1)){Serial1.write(keyPress);}
   #endif
 }
@@ -271,7 +257,6 @@ boolean terminalToggle(boolean returnVar)
 }
 
 //----------------adjusting settings with pontentiometer---------
-#define ADJUST_POT A1
 #define PWM_ADJUST 4
 #define TIMING_ADJUST 5
 void potentiometer(byte mode)

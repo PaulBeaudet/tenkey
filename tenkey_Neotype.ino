@@ -4,6 +4,9 @@
 * This program is free open source software: See licenses.txt to understand 
   reuse rights of any file associated with this project
 ********* See readme.md for hardware discription **************/
+#include <Wire.h>          // i2c 
+#include "selectHardware.h"//modify this file to use differant hardware
+
 #define MONITOR_MODE   0 // goto default behavior for multi-mode functions
 #define TRIGGER        1 // set enter key to press : enterBehavior()
 #define DEFAULT_MODE   1 // outputFilter: regular letters, potentiometer check
@@ -12,11 +15,6 @@
 #define ADJUST_PWM     2 // potentiometer()
 #define ADJUST_TIMING  3 // potentiometer()
 #define LINE_SIZE      80   //cause why should a line be longer?
-#define NEW_LINE       '\n' //determines end of a message in buffer
-#define BACKSPACE      8    // output keys
-#define TAB_KEY        9
-#define SPACEBAR       32
-#define CARIAGE_RETURN 13
 
 void setup()//setup the needed hardware  
 {
@@ -31,7 +29,7 @@ void loop()
   // captures the current state of the buttons
   if(pressState)
   {   
-    if (pressState < 128) //if letter press state
+    if (pressState < 128 || pressState == CARIAGE_RETURN)//reduces to letters
     {
       recordHandlr(pressState);//records presses to messageHandlr given active
       keyOut(pressState);      //actuate the press as a keystroke
@@ -59,6 +57,8 @@ void macros(byte letter)
     if(recordHandlr(MONITOR_MODE)){;}
     else{messageHandlr(RECORD_CAT);}
   }
+  else if(letter == 'c' + SPACEBAR){comboPress(LEFT_CTRL, LEFT_ALT, 0);}
+  //!! uno problem  ------------------------->         ^         ^ 
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
   else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);} //Toggle to pwm
   else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
