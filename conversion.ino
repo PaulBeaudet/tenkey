@@ -11,10 +11,16 @@ const byte chordPatterns[] PROGMEM = // alphabetical chord assignment
 }; // array ordered as alphabet (a->1, b->5, ect)
 
 const byte spaceParody[] PROGMEM = // space shift posibilities
-{//A1/ b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
-  '@','{','}','$','-', 47, 38, 39,'#','(',')','[',']',//47=forwardslash 
-// N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z  //39=single quote
-  '?','!','.','=','"', 92,',','_','<','>','*','|','+',//92=slash
+{
+  LEFT_ARROW,//A1
+// b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
+  '{','}','$','!', 47, 38,'?','#', 39,')','[',']',//39=single quote
+  DOWN_ARROW,//n2                                 //47=forwardslash
+// O3/ p / q                                      //92=slash
+  '.','"','=',
+  UP_ARROW, RIGHT_ARROW,// R7/ S8
+// T4/ u / v / w / x / y / z  
+  ',','_','<','>','*','|','+',
 };
 
 const byte backParody[] PROGMEM = //backspace shift posibilities

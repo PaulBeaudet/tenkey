@@ -29,12 +29,13 @@ void loop()
   // captures the current state of the buttons
   if(pressState)
   {   
-    if (pressState < 128 || pressState == CARIAGE_RETURN)//reduces to letters
+    if (pressState < 128)//reduces to letters
     {
       recordHandlr(pressState);//records presses to messageHandlr given active
       keyOut(pressState);      //actuate the press as a keystroke
       messageHandlr(TRIGGER);  //letters can interupt
     } 
+    else if(pressState > 159){keyOut(pressState);}//special cases like arrows
     else // if a macro pressState
     {
       macros(pressState);
@@ -57,12 +58,15 @@ void macros(byte letter)
     if(recordHandlr(MONITOR_MODE)){;}
     else{messageHandlr(RECORD_CAT);}
   }
-  else if(letter == 'c' + SPACEBAR){comboPress(LEFT_CTRL, LEFT_ALT, 0);}
-  //!! uno problem  ------------------------->         ^         ^ 
+  else if(letter == 'c' + SPACEBAR){comboPress(LEFT_CTRL, 'c', 0);}//copy
+  else if(letter == 'g' + SPACEBAR){keyOut(LEFT_GUI);} //search on many OSes
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
   else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);} //Toggle to pwm
+  else if(letter == 'l' + SPACEBAR){comboPress(LEFT_CTRL, LEFT_ALT, 0);}
   else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
   else if(letter == 'r' + SPACEBAR){recordHandlr(TRIGGER);}//start recording
   else if(letter == 's' + SPACEBAR){potentiometer(ADJUST_TIMING);}//toggle 
   else if(letter == 't' + SPACEBAR){terminalToggle(0);}//toggle terminal shell
+  else if(letter == 'v' + SPACEBAR){comboPress(LEFT_CTRL,'v',0);}//paste
+  else if(letter == 'x' + SPACEBAR){comboPress(LEFT_CTRL,'x',0);}//cut
 }
