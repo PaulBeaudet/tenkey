@@ -4,39 +4,32 @@
 //--ANOTHERS layout-- keys a-n-o-t-h-e-r-s make up the homerow 
 const byte chordPatterns[] PROGMEM = // alphabetical chord assignment
 // each byte is a series of bits that make up a chord
-{ //a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
-  128, 10,144, 80,  4,  6, 96,  8, 48,192,  5, 24, 60,
-//  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z, 
-   64, 32,  3,  9,  2,  1, 16, 12,129, 66, 14, 36,112,
+{ //`,  a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
+  160,128, 10,144, 80,  4,  6, 96,  8, 48,192,  5, 24, 60,
+//  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z,  {,  |,  },  ~,
+   64, 32,  3,  9,  2,  1, 16, 12,129, 66, 14, 36,112,224,195,  7,165,
 }; // array ordered as alphabet (a->1, b->5, ect)
 
 const byte spaceParody[] PROGMEM = // space shift posibilities
-{
-  LEFT_ARROW,//A1
+{//` , A
+  '^',LEFT_ARROW,
 // b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
-  '{','}','$','!', 47, 38,'?','#', 39,')','[',']',//39=single quote
+  '%',':','$','!', 47, 38,'?','"', 39,'_','[',']',//39=single quote
   DOWN_ARROW,//n2                                 //47=forwardslash
 // O3/ p / q                                      //92=slash
-  '.','"','=',
+  '.','+','=',
   UP_ARROW, RIGHT_ARROW,// R7/ S8
-// T4/ u / v / w / x / y / z  
-  ',','_','<','>','*','|','+',
-};
-
-const byte backParody[] PROGMEM = //backspace shift posibilities
-{//A1/ b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
-  '`','{',':','$','-', 47, 38, 39,'#','(',')','[',']',//47=forwardslash 
-// N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z  //39=single quote
-  '?','!','%','=','"',';','~','_','^','>','*','|','+',//92=slash
+// T4/ u / v / w / x / y / z / { / | / } / ~
+  ',',';','<','>','*', 92,'+','(','-',')','#'
 };
 
 const byte numberParody[] PROGMEM = // option shift to numbers
-{//A1/ b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
-  '1','.','^', 47,'6','<','>','5','9','(',')','-','*',//47=forwardslash 
-// N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z  //39=single quote
-  '2','3','+','%','7','8','4','0','"', 39,'x',',','=',//92=slash
+{//`/ A1/ b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
+  47,'1','.','^', 47,'6','<','>','5','9','#','@','-','*',//47=forwardslash 
+// N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z / { / | / } 
+  '2','3','+','%','7','8','4','0','"', 39,'x',',','=','{','|','}',
 };
-#define PATTERNSIZE 26 //sizeof(chordPatterns)
+#define PATTERNSIZE 31 //sizeof(chordPatterns)
 
 boolean convertionMode(boolean toggle) //toggles numbers or letters mode
 {
@@ -62,11 +55,7 @@ byte patternToChar(int base) //returns the char value of a raw chord
       {// 512 = 10-0000-0000 // if( 10th bit is fliped high )
         return pgm_read_byte(&spaceParody[i]);
       } //convert letters to special characters
-      if (base & L_THUMB)//second level shift *combination with backspace
-      {// 256 = 01-0000-0000 // if(9th bit is high) 
-        return pgm_read_byte(&backParody[i]);
-      }
-      if(convertionMode(MONITOR_MODE)){return 'a' + i;}
+      if(convertionMode(MONITOR_MODE)){return '`' + i;}
       else{return pgm_read_byte(&numberParody[i]);}
     }// return plain char based on possition in the array given no shift
   }
@@ -77,11 +66,9 @@ byte charToPattern(byte letter)
 { // if any of 4 possible parodies line up
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping
-    if( letter == ('a'+ i) )                      //typical letter patterns
+    if( letter == ('`'+ i) )                      //typical letter patterns
     {return pgm_read_byte(&chordPatterns[i]);}
     if( letter == pgm_read_byte(&spaceParody[i])) //space combination cases
-    {return pgm_read_byte(&chordPatterns[i]);}
-    if( letter == pgm_read_byte(&backParody[i]))  //back combination cases 
     {return pgm_read_byte(&chordPatterns[i]);}
     if( letter == pgm_read_byte(&numberParody[i]))//numbers parody chords
     {return pgm_read_byte(&chordPatterns[i]);}
