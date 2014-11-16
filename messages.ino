@@ -1,5 +1,4 @@
 // messages.ino --Copyright Paul Beaudet 2014 See license for reuse info
-
 boolean messageHandlr(byte mode)
 {
   static char lineBuffer[LINE_SIZE]={};
@@ -55,23 +54,7 @@ boolean messageHandlr(byte mode)
   return playFlag;
 }
 
-byte positionHandlr(byte mode)
-{
-  static byte position = 0; //default to possition zero
-  
-  if     (mode == TRIGGER)              
-  {
-    position++;
-    if(position == LINE_SIZE){position--; Serial.println("#!");}
-  }
-  else if(mode == RECORD_CAT)           {position=0;}
-  else if(mode == BACKSPACE && position){position--;}
-  return position;
-}
-
-/******* incoming messages **********************
-Serial receive message
-************************************************/
+//******* Serial receive message *************** 
 void listenForMessage()
 { 
   while(Serial.available())
