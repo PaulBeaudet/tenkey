@@ -10,7 +10,7 @@ void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
   pagers.setPWMFreq(1600);  // This is the maximum PWM frequency
   uint8_t twbrbackup = TWBR;// save I2C bitrate
   // must be changed after calling Wire.begin() (inside pwm.begin())
-  TWBR = 12; // upgrade to 400KHz!   
+  TWBR = 12; // upgrade to 400KHz!
 }
 
 void patternVibrate(int pins, int intensityChange = 0)
@@ -35,17 +35,15 @@ boolean hapticMessage(byte letter, int spacing = 0)
   if(spacing){timing = spacing; return false;}//change timing call
   
   if(letter)
-  {
-    byte validPatern = charToPattern(letter);
-    if(validPatern)
+  {    
+    if(byte validPatern = charToPattern(letter))
     {
       ptimeCheck(timing);
       patternVibrate(validPatern);
       animated = false;
     }
-    byte validAnimation = getFrame(0, letter);
-    if(validAnimation)
-    {
+    else if(byte validAnimation = getFrame(0, letter))
+    {//if 0 frame is availible for this letter
       int adjustedTime = timing / 2 + timing;
       ptimeCheck(adjustedTime/NUMPAGERS); // a fraction of alotted time
       patternVibrate(validAnimation);
@@ -89,7 +87,7 @@ boolean animatedProcess(int timing)
     if(frame == NUMPAGERS) // reached maxium number of frames
     {
       frame = 0;     //Start back at frame zero
-      getFrame(0,1); //reset framer
+      getFrame(0,TRIGGER); //reset framer
       return true;   // animation complete
     }
     patternVibrate(getFrame(frame)); //start to play frame
@@ -205,7 +203,8 @@ void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
         bootHandler(YUN_BOOT_OUTPUT);
         booting = true;    //buffer filled before user interaction was possible
       }
-      if(inputFilter(patternToChar(buttonSample())) == 's' && !booting){break;}
+      if(inputFilter(patternToChar(buttonSample())) == 's' && !booting)//esc
+      {ptimeCheck(1); break;}//prep timer for possible imediatete rec case.
     }                      // timer returns true when finished exiting loop
     if (booting)
     {
