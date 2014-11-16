@@ -10,7 +10,7 @@ boolean messageHandlr(byte mode)
     if(playFlag) 
     { 
       if(hapticMessage(MONITOR_MODE))//reads true when current letter done
-      {
+      {                              //also reads true on start from setup
         if(lineBuffer[pos] == NEW_LINE)
         {// Check for end case before updating further
           removeThisMany(pos);//backspace printed chars
@@ -31,13 +31,7 @@ boolean messageHandlr(byte mode)
       pos = 0; playFlag = false;  //reset possition and playflag
     }
   }
-  else if(mode == RECORD_CAT) // 2 Concat out lineBuffer
-  {
-    playFlag = true; // be sure pos is zero, signal playing
-    hapticMessage(lineBuffer[pos]); //TODO are the following three redundant?
-    keyOut(lineBuffer[pos]);
-    pos++;
-  }
+  else if(mode == RECORD_CAT){playFlag = true;}//signal play to start
   //------------------ letters cases -----------------
   else if(mode == BACKSPACE){pos--;}//delete buffer entry-> happens in record
   else if(mode == NEW_LINE)
