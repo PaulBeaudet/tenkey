@@ -78,23 +78,18 @@ byte charToPattern(byte letter)
 //----------Animations---------------
 const byte frameStore[] PROGMEM =
 {// 0 possition identifies type; other possitions are frames
-  32, 128, 64, 32, 16, 8, 4, 2, 1, 
+  128, 64, 32, 16, 8, 4, 2, 1, //spacebar
 };
 
-byte getFrame(byte part, byte type = 0)
-{
-  static byte inProgressType = 0;
+byte getFrame(byte frame, byte type = 0)
+{  //Default No activity value ***;
+  static byte inProgressType = 255; // refers to dementions in the frame store
   
-  if(type == SPACEBAR) // this the only currently supported animation
-  {
-    inProgressType = 1;
-  }
-  if(type == 1){inProgressType = 0;}//finish signal prep for next animation
-  //TODO make room for future animations by allowing the type to 
-  // change the first dimention in a 2d array
-
-  if (inProgressType){return pgm_read_byte(&frameStore[part + 1]);}
-  return 0;
+  if      (type == TRIGGER){inProgressType = 255;}//One is the reset signal
+  else if(type == SPACEBAR){inProgressType = 0;}//first dimention
+  //TODO make room for future animations
+  if (inProgressType == 255){return 0;}
+  else {return pgm_read_byte(&frameStore[frame]);}
 }
 
 // ------- contextual --------------
