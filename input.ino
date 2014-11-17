@@ -15,7 +15,7 @@ byte inputFilter(byte input)
       if(uniAfterMulti(event, lastEvent)){output = 0;}//unless uniAfterMulti
     }   
   } // if the input is zero and enough time has elapsed reset the condition
-  else if (!input && spacerTimer(0)>10){lastEvent = 0;} 
+  else if (!input && spacerTimer(0)>9){lastEvent = 0;} 
   //button has been let go long enough to discount odd stuff
   return output; 
 }
@@ -67,8 +67,8 @@ byte homerow(byte input, byte progress)
 byte oneException(byte progress)
 {
   if(progress==7)   {return '1';}
-  if(progress == 80){return BACKSPACE;}
-  if(progress == 85){return 129;} // signal a hold
+  if(progress == 70){return BACKSPACE;}
+  if(progress == 75){return 129;} // signal a hold
   return 0;
 }
 
@@ -94,9 +94,9 @@ byte chordActions(byte input, byte progress)
 
 byte holdTiming(byte input, byte progress)
 {
-  if(progress == 40){return BACKSPACE;}
-  if(progress == 45){return input-SPACEBAR;}
-  if(progress == 80){return BACKSPACE;}
-  if(progress == 85){return input+SPACEBAR;}
+  if(progress == 25){return BACKSPACE;}
+  if(progress == 30){return input-SPACEBAR;}
+  if(progress == 70){return BACKSPACE;}
+  if(progress == 75){return input+SPACEBAR;}
   return 0;
 }
