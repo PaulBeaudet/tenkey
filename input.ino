@@ -23,11 +23,11 @@ byte inputFilter(byte input)
 boolean uniAfterMulti(byte currentInput, byte lastInput)
 { // was the last event a uni-gram? if so 
   boolean lastWasUni = false;//guilty till proven inocent
-  if(isHomerow(lastInput)){lastWasUni = true;}
+  if(isHomerow(lastInput) || isNumRow(lastInput)){lastWasUni = true;}
   else // given last input was a multi
   {    // check if current press was on the homerow
-    if (isHomerow(currentInput)){return true;} //signal true if uni after multi
-  }
+    if (isHomerow(currentInput) || isNumRow(currentInput)){return true;}
+  }//signal true if uni after multi
   return false;
 }
 
@@ -36,16 +36,16 @@ byte holdFilter(byte input)
   static byte lastInput = 0;
   byte output = 0;// output defaults to zero
   
-  if (input != lastInput){spacerTimer(1);}// given change reset clock
+  if (input != lastInput){spacerTimer(TRIGGER);}// given change reset clock
   else if (input)// if the current input is consitent with the last
   { // check how long the input has been pressed
     if(input == BACKSPACE)    {output = backActions(spacerTimer(0));}
     else if(input == SPACEBAR){output = spaceActions(spacerTimer(0));}
-    else if(input == '1')     {output = oneException(spacerTimer(0));}
+    else if(isNumRow(input))  {output = numberRow(input, spacerTimer(0));}
     else if(isHomerow(input)) {output = homerow(input, spacerTimer(0));}
     else if(input < 127 && input > 95) //multi key letter presses
                               {output = chordActions(input, spacerTimer(0));}
-    else if(spacerTimer(0) == 1){output = input;} //outside cases play
+    else if(spacerTimer(0) == 3){output = input;} //outside cases play
   }                                               // on first step
   lastInput = input;
   return output;
@@ -64,11 +64,11 @@ byte homerow(byte input, byte progress)
   return holdTiming(input, progress);
 }
 
-byte oneException(byte progress)
+byte numberRow(byte input, byte progress)
 {
-  if(progress==7)   {return '1';}
+  if(progress==7)   {return input;}
   if(progress == 70){return BACKSPACE;}
-  if(progress == 75){return 129;} // signal a hold
+  if(progress == 75){return 129;} // signal switch back to letters
   return 0;
 }
 
@@ -80,7 +80,7 @@ byte backActions(byte progress)
 
 byte spaceActions(byte progress)
 {
-  if(progress == 2){return SPACEBAR;}
+  if(progress == 7){return SPACEBAR;}
   if(progress == 35){return BACKSPACE;}//be sure the tab is a true tab
   if(progress == 40){return TAB_KEY;}//hold for tab case
   return 0; // terminate outside space cases

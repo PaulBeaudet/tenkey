@@ -96,10 +96,15 @@ byte getFrame(byte frame, byte type = 0)
 const byte homeRow[] PROGMEM = {'a','n','o','t','h','e','r','s',};
 
 boolean isHomerow(byte letter)
-{
+{// returns true for letters in the homerow
   for(byte i = 0; i < 8; i++)
-  {
-    if (letter == pgm_read_byte(&homeRow[i])){return true;}
-  }
+  {if (letter == pgm_read_byte(&homeRow[i])){return true;}}
+  if(letter == SPACEBAR){return true;}
+  return false;
+}
+
+boolean isNumRow(byte letter)
+{ // returns turn for numbers that are on the homerow
+  for(byte i=1; i<9; i++){if(letter == i + 48){return true;}}
   return false;
 }
