@@ -40,7 +40,7 @@ byte holdFilter(byte input)
   else if (input)// if the current input is consitent with the last
   { // check how long the input has been pressed
     if(input == BACKSPACE)    {output = backActions(spacerTimer(0));}
-    else if(input == SPACEBAR){output = spaceActions(spacerTimer(0));}
+    //else if(input == SPACEBAR){output = spaceActions(spacerTimer(0));}
     else if(isNumRow(input))  {output = numberRow(input, spacerTimer(0));}
     else if(isHomerow(input)) {output = homerow(input, spacerTimer(0));}
     else if(input < 127 && input > 95) //multi key letter presses
@@ -78,13 +78,13 @@ byte backActions(byte progress)
   return 0; // terminate outside backspace cases
 }
 
-byte spaceActions(byte progress)
+/*byte spaceActions(byte progress)
 {
   if(progress == 7){return SPACEBAR;}
   if(progress == 35){return BACKSPACE;}//be sure the tab is a true tab
   if(progress == 40){return TAB_KEY;}//hold for tab case
   return 0; // terminate outside space cases
-}
+}*/
 
 byte chordActions(byte input, byte progress)
 {
@@ -95,7 +95,11 @@ byte chordActions(byte input, byte progress)
 byte holdTiming(byte input, byte progress)
 {
   if(progress == 25){return BACKSPACE;}
-  if(progress == 30){return input-SPACEBAR;}
+  if(progress == 30)
+  {
+    if(input == SPACEBAR){return TAB_KEY;}
+    return input-SPACEBAR;
+  }
   if(progress == 70){return BACKSPACE;}
   if(progress == 75){return input+SPACEBAR;}
   return 0;
