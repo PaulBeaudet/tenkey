@@ -6,7 +6,7 @@ byte inputFilter(byte input)
   
   if(byte event = holdFilter(input))// was there an event?
   {// only allow it if it is differant then the last event
-    if(event == BACKSPACE){lastEvent = event; return event;} 
+    if(isRepeating(event)){lastEvent = event; return event;} 
     // include held doubles for backspace
     if (event != lastEvent)
     { // we have differant events 
@@ -39,8 +39,7 @@ byte holdFilter(byte input)
   if (input != lastInput){spacerTimer(TRIGGER);}// given change reset clock
   else if (input)// if the current input is consitent with the last
   { // check how long the input has been pressed
-    if(input == BACKSPACE)    {output = backActions(spacerTimer(0));}
-    //else if(input == SPACEBAR){output = spaceActions(spacerTimer(0));}
+    if(isRepeating(input))    {output = repeatingKeys(input, spacerTimer(0));}
     else if(isNumRow(input))  {output = numberRow(input, spacerTimer(0));}
     else if(isHomerow(input)) {output = homerow(input, spacerTimer(0));}
     else if(input < 127 && input > 95) //multi key letter presses
@@ -72,19 +71,11 @@ byte numberRow(byte input, byte progress)
   return 0;
 }
 
-byte backActions(byte progress)
+byte repeatingKeys(byte input, byte progress)
 {// if holding more than X return when timeing is devisible by 3 or 12
-  if(progress == 5 || progress > 30 && progress % 3 == 0){return BACKSPACE;} 
+  if(progress == 5 || progress > 30 && progress % 3 == 0){return input;} 
   return 0; // terminate outside backspace cases
 }
-
-/*byte spaceActions(byte progress)
-{
-  if(progress == 7){return SPACEBAR;}
-  if(progress == 35){return BACKSPACE;}//be sure the tab is a true tab
-  if(progress == 40){return TAB_KEY;}//hold for tab case
-  return 0; // terminate outside space cases
-}*/
 
 byte chordActions(byte input, byte progress)
 {
