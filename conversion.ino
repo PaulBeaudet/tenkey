@@ -6,8 +6,8 @@ const byte chordPatterns[] PROGMEM = // alphabetical chord assignment
 // each byte is a series of bits that make up a chord
 { //`,  a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
   160,128, 10,144, 80,  4,  6, 96,  8, 48,192,  5, 24, 60,
-//  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z,  {,  |,  },  ~,
-   64, 32,  3,  9,  2,  1, 16, 12,129, 66, 14, 36,112,224,195,  7,165,
+//  n,  o,  p,  q,  r,  s,  t,  u,  v,  w,  x,  y,  z,  {,  |,  },  ~,del
+   64, 32,  3,  9,  2,  1, 16, 12,129, 66, 14, 36,112,224,195,  7,165,102
 }; // array ordered as alphabet (a->1, b->5, ect)
 
 const byte spaceParody[] PROGMEM = // space shift posibilities
@@ -19,17 +19,17 @@ const byte spaceParody[] PROGMEM = // space shift posibilities
 // O3/ p / q                                      //92=slash
   '.','+','=',
   UP_ARROW, RIGHT_ARROW,// R7/ S8
-// T4/ u / v / w / x / y / z / { / | / } / ~
-  ',',';','<','>','*', 92,'+','(','-',')','#'
+// T4/ u / v / w / x / y / z / { / | / } / ~ /del
+  ',',';','<','>','*', 92,'+','(','-',')','#','?'
 };
 
 const byte numberParody[] PROGMEM = // option shift to numbers
 {//`/ A1/ b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
   47,'1','.','^', 47,'6','<','>','5','9','#','@','-','*',//47=forwardslash 
-// N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z / { / | / } 
-  '2','3','+','%','7','8','4','0','"', 39,'x',',','=','{','|','}',
+// N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z / { / | / } /del
+  '2','3','+','%','7','8','4','0','"', 39,'x',',','=','{','|','}','?'
 };
-#define PATTERNSIZE 31 //sizeof(chordPatterns)
+#define PATTERNSIZE SPACEBAR //sizeof(chordPatterns)
 
 boolean convertionMode(boolean toggle) //toggles numbers or letters mode
 {

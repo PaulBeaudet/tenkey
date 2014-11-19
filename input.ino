@@ -42,7 +42,7 @@ byte holdFilter(byte input)
     if(isRepeating(input))    {output = repeatingKeys(input, spacerTimer(0));}
     else if(isNumRow(input))  {output = numberRow(input, spacerTimer(0));}
     else if(isHomerow(input)) {output = homerow(input, spacerTimer(0));}
-    else if(input < 127 && input > 95) //multi key letter presses
+    else if(input < 128 && input > 95) //multi key letter presses
                               {output = chordActions(input, spacerTimer(0));}
     else if(spacerTimer(0) == 3){output = input;} //outside cases play
   }                                               // on first step
@@ -79,7 +79,11 @@ byte repeatingKeys(byte input, byte progress)
 
 byte chordActions(byte input, byte progress)
 {
-  if(progress == 2) {return input;}
+  if(progress == 2)
+  {
+    if(input == 127){return TAB_KEY;}
+    return input;
+  }
   return holdTiming(input, progress);
 }
 
