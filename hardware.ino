@@ -1,7 +1,10 @@
 //hardware.ino  Copyright Paul Beaudet 2014 See license for reuse info
 //depends on timing.ino, wire and Adafruit_PWM
 
-//---------------- Haptics / Pagers / Vib motors ------------------------
+//---------------- Haptics / Pagers / Vib motors -----------------
+#include "Adafruit_PWM.h" // see readme for harware notes
+#define NUMPAGERS 8 // can use up to 16
+#define COUNTBACKPAGERS 8 - 1
 Adafruit_PWM pagers = Adafruit_PWM();// create pagers object
 
 void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
@@ -128,17 +131,13 @@ byte chordLoop(int input) // takes sample of buttons: returns true for press
 //------------SERIAL SETUP --------------------------
 void serialInterfaceUp()
 {
-  #ifdef UNO
-    Serial.begin(9600);// Bluefruit EZ key HID
-  #endif
+  Serial.begin(9600);// COM with Bluefruit EZ key HID or pyserial
   #ifdef LEO // in leo case bluefruit is serial1
-    Serial.begin(9600);//messages in
     Keyboard.begin(); //begin wired via usb keyboard
     Serial1.begin(9600); //possible comunication Bluefruit via pins 0,1
   #endif
   #ifdef YUN
     Keyboard.begin();//begin wired via usb keyboard
-    Serial.begin(115200); // debug output / message input 
     Serial1.begin(250000); // begin communication with dd-wrt ash terminal
     // make sure linux has booted and shutdown bridge
     bootCheck(); // returns true for boot, full boot takes about 60sec
@@ -149,10 +148,6 @@ void serialInterfaceUp()
 //-------------Writing keys to host----------
 void keyOut(byte keyPress)
 {
-  #ifdef UNO
-    if(keyPress > 128){return;} // these cases need to be translated for UNO
-    Serial.write(keyPress); // debug or bluefruit
-  #endif  
   #if defined(LEO) || defined(YUN)
     if(keyPress == CARIAGE_RETURN){Keyboard.write(KEY_RETURN);} 
     else {Keyboard.write(keyPress);}
@@ -161,22 +156,43 @@ void keyOut(byte keyPress)
     if(keyPress == CARIAGE_RETURN){keyPress = NEW_LINE;}//linux return call
     if(terminalToggle(1)){Serial1.write(keyPress);}
   #endif
+  Serial.write(keyPress); // bluefruit or the uno or conection with pyserial
 }
 
-void comboPress(byte first, byte second, byte third) // TODO bluefruit logic
+void comboPress(byte modifiers, byte second, byte third)
 {// more deployable macro triger, would be nice if defaults could be used
-  #ifdef LEO
-    Keyboard.press(first);
+  #if defined(YUN) || defined(LEO)
+    modPress(modifiers);
     Keyboard.press(second);
     if(third){Keyboard.press(third);}
     Keyboard.releaseAll();
   #endif
-  #ifdef YUN
-    Keyboard.press(first);
-    Keyboard.press(second);
-    if(third){Keyboard.press(third);}
-    Keyboard.releaseAll();
+}
+
+void modPress(byte modifiers)
+{
+  #if defined(YUN) || defined(LEO)
+  for(byte i = 0; i < 8; i++)//cycle through modifier cases
+  {
+    if(modifiers & (1<<i)){Keyboard.press(i+128);}
+  }
   #endif
+}
+
+void keyCommand(byte modifiers, byte key1, byte key2 = 0)
+{
+  if(needShift(key1)){modifiers=modifiers|LEFT_SHIFT;}//NOTE affects key2
+  key1 = letterToBT(key1);
+  if(key2){key2 = letterToBT(key2);} // in the rare case a second mod is needed
+  Serial.write(0xFD); // our command: 0xfd
+  Serial.write(modifiers); // modifier!
+  Serial.write((byte)0); // 0x00
+  Serial.write(key1); // key code #1
+  Serial.write(key2); // key code #2
+  Serial.write((byte)0); // key code #3
+  Serial.write((byte)0); // key code #4
+  Serial.write((byte)0); // key code #5
+  Serial.write((byte)0); // key code #6
 }
 
 //---------- YUN specific --------------

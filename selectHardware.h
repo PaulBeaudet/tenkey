@@ -9,13 +9,13 @@
 #define YUN //Bluefruit is only compatible with yun via software serial 
 //#define UNO   // Arduinos using the 328p + bluefruit EZ-key HID
 
-//--------- Haptic display
+//---------------- Haptics / Pagers / Vib motors -----------------
 #include "Adafruit_PWM.h" // see readme for harware notes
 #define NUMPAGERS 8 // can use up to 16
-#define COUNTBACKPAGERS NUMPAGERS - 1
+#define COUNTBACKPAGERS 8 - 1
 
 //--------- Button pin-out
-const byte buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
+const uint8_t buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
 // pins can be aligned in here if miswired: try to do it right in hardware
 // -------- Potentionmeter
 #define ADJUST_POT A1
@@ -24,80 +24,86 @@ const byte buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
 #define YUN_BOOT_OUTPUT true // mark true to see yun boot msgs on serial
 
 //-------------- KEY DEFINITIONS -----------------
-#define NEW_LINE       '\n' //determines end of a message in buffer "10"
-#define BACKSPACE      8    // output keys
+#if defined(LEO) || defined(YUN) //HID Emulation values
+ //---------- Macro Conflicts above -----
+ #define KB_INSERT      209
+ #define KB_HOME        210
+ #define KB_PAGE_UP     211
+ #define KB_DELETE      212
+ #define KB_END         213
+ #define KB_PAGE_DOWN   214
+ #define KB_RIGHT_ARROW 215
+ //Backspace
+ //tab
+ //new line
+ #define KB_LEFT_ARROW  216
+ #define KB_DOWN_ARROW  217
+ //cariage return
+ #define KB_UP_ARROW    218
+ #define KB_FUNC_F1     194
+ #define KB_FUNK_F2     195
+ #define KB_FUNC_F3     196
+ #define KB_FUNK_F4     197
+ #define KB_FUNC_F5     198
+ #define KB_FUNK_F6     199
+ #define KB_FUNC_F7     200
+ #define KB_FUNK_F8     201
+ #define KB_FUNC_F9     202
+ #define KB_FUNK_F10    203
+ #define KB_FUNC_F11    204
+ #define KB_FUNK_F12    205
+ #define KB_ESC         177
+ #define KB_CAPS_LOCK   193
+#endif
+
+#define INSERT         1
+#define HOME           2
+#define PAGE_UP        3
+#define DELETE         4
+#define END            5
+#define PAGE_DOWN      6
+#define RIGHT_ARROW    7
+#define BACKSPACE      8    
 #define TAB_KEY        9
+#define NEW_LINE       10 //determines end of a message in buffer "10"
+#define LEFT_ARROW     11
+#define DOWN_ARROW     12
 #define CARIAGE_RETURN 13
+#define UP_ARROW       14
+#define FUNC_F1        15
+#define FUNK_F2        16
+#define FUNC_F3        17
+#define FUNK_F4        18
+#define FUNC_F5        19
+#define FUNK_F6        20
+#define FUNC_F7        21
+#define FUNK_F8        22
+#define FUNC_F9        23
+#define FUNK_F10       24
+#define FUNC_F11       25
+#define FUNK_F12       26
+#define ESC            27
+#define CAPS_LOCK      28
+#define SCROLL_LOCK    29
+#define BREAK          30
+#define NUM_LOCK       31
 #define SPACEBAR       32
 
-#if defined(LEO) || defined(YUN) //HID Emulation values
- #define LEFT_CTRL   128
- #define LEFT_SHIFT  129
- #define LEFT_ALT    130
- #define LEFT_GUI    131
- #define RIGHT_CTRL  132
- #define RIGHT_SHIFT 133
- #define RIGHT_ALT   134
- #define RIGHT_GUI   135
- //---------- Macro Conflicts above -----
- #define UP_ARROW    218
- #define DOWN_ARROW  217
- #define LEFT_ARROW  216
- #define RIGHT_ARROW 215
- #define ESC         177
- #define INSERT      209
- #define DELETE      212
- #define PAGE_UP     211
- #define PAGE_DOWN   214
- #define HOME        210
- #define END         213
- #define CAPS_LOCK   193
- #define FUNC_F1     194
- #define FUNK_F2     195
- #define FUNC_F3     196
- #define FUNK_F4     197
- #define FUNC_F5     198
- #define FUNK_F6     199
- #define FUNC_F7     200
- #define FUNK_F8     201
- #define FUNC_F9     202
- #define FUNK_F10    203
- #define FUNC_F11    204
- #define FUNK_F12    205
-#endif
-
-#ifdef UNO //HID Emulation values
- #define LEFT_CTRL   0xEO
- #define LEFT_SHIFT  0xE1
- #define LEFT_ALT    0xE2
- #define LEFT_GUI    0xE3
- #define RIGHT_CTRL  0xE4
- #define RIGHT_SHIFT 0xE5
- #define RIGHT_ALT   0xE6
- #define RIGHT_GUI   0xE7
- //---------- Macro Conflicts above -----
- #define UP_ARROW    0x0E
- #define DOWN_ARROW  0x0C
- #define LEFT_ARROW  0x0B
- #define RIGHT_ARROW 0x07
- #define ESC         0x1B
- #define INSERT      0x01
- #define DELETE      0x04
- #define PAGE_UP     0x03
- #define PAGE_DOWN   0x06
- #define HOME        Ox02
- #define END         0x05
- #define CAPS_LOCK   0x1C
- #define FUNC_F1     0x0F
- #define FUNK_F2     0x10
- #define FUNC_F3     0x11
- #define FUNK_F4     0x12
- #define FUNC_F5     0x13
- #define FUNK_F6     0x14
- #define FUNC_F7     0x15
- #define FUNK_F8     0x16
- #define FUNC_F9     0x17
- #define FUNK_F10    0x18
- #define FUNC_F11    0x19
- #define FUNK_F12    0x1A
-#endif
+//control char Bluefruit presses  NOT USED 
+#define BT_LEFT_CTRL      224
+#define BT_LEFT_SHIFT     225
+#define BT_LEFT_ALT       226
+#define BT_LEFT_GUI       227
+#define BT_RIGHT_CTRL     228
+#define BT_RIGHT_SHIFT    229
+#define BT_RIGHT_ALT      230
+#define BT_RIGHT_GUI      231
+// Mask these are the used 
+#define LEFT_CTRL   1   //0 #define KB_LEFT_CTRL   128
+#define LEFT_SHIFT  2   //1 #define KB_LEFT_SHIFT  129
+#define LEFT_ALT    4   //2 #define KB_LEFT_ALT    130
+#define LEFT_GUI    8   //3 #define KB_LEFT_GUI    131
+#define RIGHT_CTRL  16  //4 #define KB_RIGHT_CTRL  132
+#define RIGHT_SHIFT 32  //5 #define KB_RIGHT_SHIFT 133
+#define RIGHT_ALT   64  //6 #define KB_RIGHT_ALT   134
+#define RIGHT_GUI   128 //7 #define KB_RIGHT_GUI   135
