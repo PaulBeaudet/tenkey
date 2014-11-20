@@ -139,62 +139,6 @@ byte letterToBT(byte letter)
   return pgm_read_byte(&BlueConvert[letter-SPACEBAR]);
 }
 
-byte letterToBT0(byte letter)//^^^^^^^^^^^^^^^^^
-{ //on second thought.. this might be much faster as an array... 
-  if(letter > 122) //HIGER than z cases
-  {
-    if(letter == '{'){return 47;} //close bracket
-    if(letter == '|'){return 49;} //backslash
-    if(letter == '}'){return 48;} //open bracket
-    if(letter == '~'){return 53;} //grave
-  }
-  if(letter > 96){return letter - 93;} // a-z = 4-29
-  if(letter > 90)
-  {
-    if(letter == '`'){return 53;}  
-    if(letter == '_'){return 45;} //minus
-    if(letter == '^'){return 35;} //6
-    if(letter == ']'){return 48;}
-    if(letter == 92) {return 49;} //92 = backslash
-    if(letter == '['){return 47;}
-  }
-  if(letter > 64)    {return letter - 61;} // A-Z = 4-29 :Are shifted with Mod
-  if(letter > 57) // HIGER than 9 case
-  {
-    if(letter == '@'){return 31;} //2  
-    if(letter == '>'){return 55;} //period
-    if(letter == '='){return 46;} //
-    if(letter == '<'){return 54;} //comma
-    if(letter == ';'){return 51;} //
-    if(letter == ':'){return 51;} //semicolon
-  }
-  if(letter > 48)    {return letter - 19;} // 1-9 = 30-38
-  if(letter ==48)             {return 39;} // 0 = 39
-  if(letter > CARIAGE_RETURN) 
-  {
-    if(letter == 47){return 56;}// 47 = slash
-    if(letter == '.'){return 55;}
-    if(letter == '-'){return 45;}
-    if(letter == ','){return 54;}
-    if(letter == '+'){return 46;}
-    if(letter == '*'){return 37;} //8
-    if(letter == ')'){return 39;} //0
-    if(letter == '('){return 38;} //9
-    if(letter ==  39){return 52;} //39 = apostrophe
-    if(letter == '&'){return 36;} //7
-    if(letter == '%'){return 34;} //5
-    if(letter == '$'){return 33;} //4
-    if(letter == '#'){return 32;} //3
-    if(letter == '"'){return 52;} //7
-    if(letter == '!'){return 30;} //1
-  }
-  if(letter == CARIAGE_RETURN){return 40;}
-  if(letter == BACKSPACE)     {return 42;}
-  if(letter == TAB_KEY)       {return 43;}
-  if(letter == SPACEBAR)      {return 44;}
-  //esc = 41 / europe 1 = 50 / caps lock = 57
-}
-
 const byte BlueShift[] PROGMEM =
 {
   '~','!','@','#','$','%','^','&','*','(',')',
