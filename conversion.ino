@@ -20,14 +20,14 @@ const byte spaceParody[] PROGMEM = // space shift posibilities
   '.','+','=',
   UP_ARROW, RIGHT_ARROW,// R7/ S8
 // T4/ u / v / w / x / y / z / { / | / } / ~ /del
-  ',',';','<','>','*', 92,'+','(','-',')','#','?'
+  ',',';','<','>','*', 92,'+','(','-',')','#',TAB_KEY
 };
 
 const byte numberParody[] PROGMEM = // option shift to numbers
 {//`/ A1/ b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
   47,'1','.','^', 47,'6','<','>','5','9','#','@','-','*',//47=forwardslash 
 // N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z / { / | / } /del
-  '2','3','+','%','7','8','4','0','"', 39,'x',',','=','{','|','}','?'
+  '2','3','+','%','7','8','4','0','"', 39,'x',',','=','{','|','}',TAB_KEY
 };
 #define PATTERNSIZE SPACEBAR //sizeof(chordPatterns)
 
@@ -67,7 +67,7 @@ byte charToPattern(byte letter)
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping
     if( letter == ('`'+ i) )                      //typical letter patterns
-    {return pgm_read_byte(&chordPatterns[i]);}
+    {return pgm_read_byte(&chordPatterns[i]);}    //TODO output shift case
     if( letter == pgm_read_byte(&spaceParody[i])) //space combination cases
     {return pgm_read_byte(&chordPatterns[i]);}
     if( letter == pgm_read_byte(&numberParody[i]))//numbers parody chords
@@ -117,3 +117,101 @@ boolean isRepeating(byte letter)
   if(letter == DOWN_ARROW){return true;}
   return false;
 }
+
+// ----------------- Key presses --------------
+const byte BlueConvert[] PROGMEM =
+{// on the ASCII table start from space and go to tilde
+  44, 30, 52, 32, 33, 34, 36, 52, 38, 39, 37, 46, 54, 45, 55, 56,
+// 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  :, ; , < , = , > , ? ,
+  39, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 51, 51, 54, 46, 55,
+//@ , A , B , C , D , E , F , G , H , I , J , K , L , M , N , O ,
+  31, 4 , 5 , 6 , 7 , 8 , 9 , 10, 11, 12, 13, 14, 15, 16, 17, 18,
+//P , Q , R , S , T , U , V , W , X , Y , Z , [ , \ , ] , ^ , _ ,
+  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 47, 49, 48, 35, 45,
+//` , a , b , c , d , e , f , g , h , i , j , k , l , m , n , o ,
+  53, 4 , 5 , 6 , 7 , 8 , 9 , 10, 11, 12, 13, 14, 15, 16, 17, 18,
+//p , q , r , s , t , u , v , w , x , y , z , { , | , } , ~ , del
+  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 47, 49, 48, 53,
+};
+
+byte letterToBT(byte letter)
+{
+  return pgm_read_byte(&BlueConvert[letter-SPACEBAR]);
+}
+
+byte letterToBT0(byte letter)//^^^^^^^^^^^^^^^^^
+{ //on second thought.. this might be much faster as an array... 
+  if(letter > 122) //HIGER than z cases
+  {
+    if(letter == '{'){return 47;} //close bracket
+    if(letter == '|'){return 49;} //backslash
+    if(letter == '}'){return 48;} //open bracket
+    if(letter == '~'){return 53;} //grave
+  }
+  if(letter > 96){return letter - 93;} // a-z = 4-29
+  if(letter > 90)
+  {
+    if(letter == '`'){return 53;}  
+    if(letter == '_'){return 45;} //minus
+    if(letter == '^'){return 35;} //6
+    if(letter == ']'){return 48;}
+    if(letter == 92) {return 49;} //92 = backslash
+    if(letter == '['){return 47;}
+  }
+  if(letter > 64)    {return letter - 61;} // A-Z = 4-29 :Are shifted with Mod
+  if(letter > 57) // HIGER than 9 case
+  {
+    if(letter == '@'){return 31;} //2  
+    if(letter == '>'){return 55;} //period
+    if(letter == '='){return 46;} //
+    if(letter == '<'){return 54;} //comma
+    if(letter == ';'){return 51;} //
+    if(letter == ':'){return 51;} //semicolon
+  }
+  if(letter > 48)    {return letter - 19;} // 1-9 = 30-38
+  if(letter ==48)             {return 39;} // 0 = 39
+  if(letter > CARIAGE_RETURN) 
+  {
+    if(letter == 47){return 56;}// 47 = slash
+    if(letter == '.'){return 55;}
+    if(letter == '-'){return 45;}
+    if(letter == ','){return 54;}
+    if(letter == '+'){return 46;}
+    if(letter == '*'){return 37;} //8
+    if(letter == ')'){return 39;} //0
+    if(letter == '('){return 38;} //9
+    if(letter ==  39){return 52;} //39 = apostrophe
+    if(letter == '&'){return 36;} //7
+    if(letter == '%'){return 34;} //5
+    if(letter == '$'){return 33;} //4
+    if(letter == '#'){return 32;} //3
+    if(letter == '"'){return 52;} //7
+    if(letter == '!'){return 30;} //1
+  }
+  if(letter == CARIAGE_RETURN){return 40;}
+  if(letter == BACKSPACE)     {return 42;}
+  if(letter == TAB_KEY)       {return 43;}
+  if(letter == SPACEBAR)      {return 44;}
+  //esc = 41 / europe 1 = 50 / caps lock = 57
+}
+
+const byte BlueShift[] PROGMEM =
+{
+  '~','!','@','#','$','%','^','&','*','(',')',
+  '_','+','{','}','|',':','"','<','>','?',
+};
+
+boolean needShift(byte letter)// does need shift?
+{
+  if(letter > 64 && letter < 91){return true;} // all uppercase letters
+  for(byte i = 0; i > 21; i++)
+  {
+    if(letter = pgm_read_byte(&BlueShift[i])){return true;}
+  }
+  return false;
+}
+
+const byte SpecialToKBD[] PROGMEM =
+{//follows system definition up to NUM_LOCK
+  209,210,211,212,213,214,
+};
