@@ -13,7 +13,7 @@ byte inputFilter(byte input)
       output = event; // good, its allowed to be and event
       lastEvent = event; // note current event for next check
       if(uniAfterMulti(event, lastEvent)){output = 0;}//unless uniAfterMulti
-    }   
+    }//TODO test if uniAfterMulti actually works
   } // if the input is zero and enough time has elapsed reset the condition
   else if (!input && spacerTimer(0)>9){lastEvent = 0;} 
   //button has been let go long enough to discount odd stuff
@@ -39,15 +39,47 @@ byte holdFilter(byte input)
   if (input != lastInput){spacerTimer(TRIGGER);}// given change reset clock
   else if (input)// if the current input is consitent with the last
   { // check how long the input has been pressed
-    if(isRepeating(input))    {output = repeatingKeys(input, spacerTimer(0));}
-    else if(isNumRow(input))  {output = numberRow(input, spacerTimer(0));}
-    else if(isHomerow(input)) {output = homerow(input, spacerTimer(0));}
+    byte progress = spacerTimer(MONITOR_MODE); //poll current time
+    if(isRepeating(input))   {output = repeatingKeys(input, progress);}
+    else if(isNumRow(input)) {output = numberRow(input, progress);}
+    else if(isHomerow(input)){output = homerow(input, progress);}
     else if(input < 128 && input > 95) //multi key letter presses
-                              {output = chordActions(input, spacerTimer(0));}
-    else if(spacerTimer(0) == 3){output = input;} //outside cases play
+                             {output = chordActions(input, progress);}
+    else if(progress == 3){output = input;} //outside cases play
   }                                               // on first step
   lastInput = input;
   return output;
+}
+
+byte rightClock(byte input)
+{ // triggers and returns the correct timing of a given input
+  static byte lastInput = 0;
+
+  if (input == TRIGGER)
+  {
+    if(input == SPACEBAR){return modTimer(MONITOR_MODE);}
+    return spacerTimer(MONITOR_MODE);
+  }
+
+  if(input != lastInput) // was there a state change?
+  {//check for mode exceptions
+    if(input == SPACEBAR)
+    {
+      if(lastInput == 0){modTimer(TRIGGER);}
+    }
+    else if(input == 0)
+    {
+      modTimer(TRIGGER);//reset mod timer
+      spacerTimer(TRIGGER);//trigger zero measurement
+    }
+    //Important zero included in lastInput
+    else {spacerTimer(TRIGGER);}
+    lastInput=input;
+    return 0; // no need to monitor clocks that were just set
+  }
+  // pass through condition
+  if(input){return input;}//signal something is going on
+  else {return TRIGGER;}
 }
 /**************************
 -HOLD FLOW-
@@ -60,6 +92,7 @@ byte holdFilter(byte input)
 byte homerow(byte input, byte progress)
 {
   if(progress == 7) {return input;}
+  if(input == SPACEBAR && progress > 20){modPress(LEFT_ALT);return 0;}
   return holdTiming(input, progress);
 }
 
@@ -90,11 +123,7 @@ byte chordActions(byte input, byte progress)
 byte holdTiming(byte input, byte progress)
 {
   if(progress == 25){return BACKSPACE;}
-  if(progress == 30)
-  {
-    if(input == SPACEBAR){return TAB_KEY;}
-    return input-SPACEBAR;
-  }
+  if(progress == 30){return input-SPACEBAR;}
   if(progress == 70){return BACKSPACE;}
   if(progress == 75){return input+SPACEBAR;}
   return 0;
