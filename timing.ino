@@ -29,4 +29,4 @@ boolean ptimeCheck(uint32_t durration)
   }                               // if the durration has elapsed return true
   else if(millis() - ptimer[0] > ptimer[1]){return true;}//time has passed  
   return false;                   //time has yet to pass
-} 
+}

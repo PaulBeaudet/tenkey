@@ -51,36 +51,6 @@ byte holdFilter(byte input)
   return output;
 }
 
-byte rightClock(byte input)
-{ // triggers and returns the correct timing of a given input
-  static byte lastInput = 0;
-
-  if (input == TRIGGER)
-  {
-    if(input == SPACEBAR){return modTimer(MONITOR_MODE);}
-    return spacerTimer(MONITOR_MODE);
-  }
-
-  if(input != lastInput) // was there a state change?
-  {//check for mode exceptions
-    if(input == SPACEBAR)
-    {
-      if(lastInput == 0){modTimer(TRIGGER);}
-    }
-    else if(input == 0)
-    {
-      modTimer(TRIGGER);//reset mod timer
-      spacerTimer(TRIGGER);//trigger zero measurement
-    }
-    //Important zero included in lastInput
-    else {spacerTimer(TRIGGER);}
-    lastInput=input;
-    return 0; // no need to monitor clocks that were just set
-  }
-  // pass through condition
-  if(input){return input;}//signal something is going on
-  else {return TRIGGER;}
-}
 /**************************
 -HOLD FLOW-
 1. debounce- accept valid input
