@@ -63,6 +63,7 @@ void macros(byte letter)
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
   else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);} //Toggle to pwm
   else if(letter == 'l' + SPACEBAR){comboPress(LEFT_CTRL|LEFT_ALT,0,0);}
+  else if(letter == 'n' + SPACEBAR){Keyboard.releaseAll();}
   else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
   else if(letter == 'r' + SPACEBAR){recordHandlr(TRIGGER);}//start recording
   else if(letter == 's' + SPACEBAR){potentiometer(ADJUST_TIMING);}//toggle 
