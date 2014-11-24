@@ -101,6 +101,8 @@ boolean animatedProcess(int timing)
 }
 
 //--------------- Buttons  ---------------
+const uint8_t buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
+// pins can be aligned in here if miswired: try to do it right in hardware
 void buttonUp()// it's cold out there, set up the buttons 
 { //  set every button as an input with internal pull-up resistence
   for (byte set=0; set < sizeof(buttons); set++)
@@ -128,150 +130,8 @@ byte chordLoop(int input) // takes sample of buttons: returns true for press
   return inputFilter(actionableSample);
 }//            debounce -> check hold -> return ASCII:letter or action code
 
-//------------SERIAL SETUP --------------------------
-void serialInterfaceUp()
-{
-  Serial.begin(9600);// COM with Bluefruit EZ key HID or pyserial
-  #ifdef LEO // in leo case bluefruit is serial1
-    Keyboard.begin(); //begin wired via usb keyboard
-    Serial1.begin(9600); //possible comunication Bluefruit via pins 0,1
-  #endif
-  #ifdef YUN
-    Keyboard.begin();//begin wired via usb keyboard
-    Serial1.begin(250000); // begin communication with dd-wrt ash terminal
-    // make sure linux has booted and shutdown bridge
-    bootCheck(); // returns true for boot, full boot takes about 60sec
-    bridgeShutdown();// with bridge shutdown serial1 acts as raw shell access
-    Serial.write('>');//ready signal 
-  #endif
-}
-//-------------Writing keys to host----------
-void keyOut(byte keyPress)
-{
-  #if defined(LEO) || defined(YUN)
-    if(keyPress == CARIAGE_RETURN){Keyboard.write(KEY_RETURN);} 
-    else {Keyboard.write(keyPress);}
-  #endif
-  #ifdef YUN
-    if(keyPress == CARIAGE_RETURN){keyPress = NEW_LINE;}//linux return call
-    if(terminalToggle(1)){Serial1.write(keyPress);}
-  #endif
-  Serial.write(keyPress); // bluefruit or the uno or conection with pyserial
-}
-
-void comboPress(byte modifiers, byte second, byte third)
-{// more deployable macro triger, would be nice if defaults could be used
-  #if defined(YUN) || defined(LEO)
-    modPress(modifiers);
-    Keyboard.press(second);
-    if(third){Keyboard.press(third);}
-    Keyboard.releaseAll();
-  #endif
-}
-
-void modPress(byte modifiers)
-{
-  #if defined(YUN) || defined(LEO)
-  for(byte i = 0; i < 8; i++)//cycle through modifier cases
-  {
-    if(modifiers & (1<<i)){Keyboard.press(i+128);}
-  }
-  #endif
-}
-
-void keyCommand(byte modifiers, byte key1, byte key2 = 0)
-{
-  if(needShift(key1)){modifiers=modifiers|LEFT_SHIFT;}//NOTE affects key2
-  key1 = letterToBT(key1);
-  if(key2){key2 = letterToBT(key2);} // in the rare case a second mod is needed
-  Serial.write(0xFD); // our command: 0xfd
-  Serial.write(modifiers); // modifier!
-  Serial.write((byte)0); // 0x00
-  Serial.write(key1); // key code #1
-  Serial.write(key2); // key code #2
-  Serial.write((byte)0); // key code #3
-  Serial.write((byte)0); // key code #4
-  Serial.write((byte)0); // key code #5
-  Serial.write((byte)0); // key code #6
-}
-
-//---------- YUN specific --------------
-#define XON            17 // control_Q resume terminal output
-#define XOFF           19 // control_S stop terminal output
-#ifdef YUN
-  void bridgeShutdown()
-  {
-    Serial1.write((uint8_t *)"\xff\0\0\x05XXXXX\x7f\xf9", 11);//shutdown bridge
-    Serial1.println();//send a new line character to enter shutdown garbage
-    delay(2);// wait for the buffer to fill with garbage
-    while(Serial1.available()){Serial1.read();} // read out shutdown garbage
-  }
-  
-  boolean bootCheck()
-  {
-    boolean booting = false;//assume complete boot
-    ptimeCheck(17800);      //set timer for max distance between boot outputs
-    // have recorded +16 sec between some outputs: important if reset midboot
-    while(!ptimeCheck(0))   //before the timer is up
-    {
-      while(Serial1.available())
-      {
-        bootHandler(YUN_BOOT_OUTPUT);
-        booting = true;    //buffer filled before user interaction was possible
-      }
-      if(inputFilter(patternToChar(buttonSample())) == 's' && !booting)//esc
-      {ptimeCheck(1); break;}//prep timer for possible imediatete rec case.
-    }                      // timer returns true when finished exiting loop
-    if (booting)
-    {
-      ptimeCheck(50000);   //give enough time to finish booting
-      while(!ptimeCheck(0))//before time is finished     
-      {
-        while(Serial1.available()){bootHandler(YUN_BOOT_OUTPUT);}
-      }                    //handle rest of output
-    }
-    return booting;        //in case of conditions looking for boot
-  }
-
-  void bootHandler(boolean startUpOutput)//pass true for verbose output
-  { //mirror boot process to the serial monitor if true argument is passed
-    if(startUpOutput){Serial.write(Serial1.read());} 
-    else{Serial1.read();}//empty buffer with empty reads
-  }
-#endif
-
-boolean serialBowl()
-{ // keep the alphabits from overflowing
-  static boolean printing = false;    //signal activity to outside loop
-  #ifdef YUN                          //only do any of this for the yun
-    if(hapticMessage(MONITOR_MODE))   //letter played or boot has occurred
-    {
-      byte incoming = Serial1.read(); //read off a byte regardless
-      if (incoming == 255){printing = false;}  //255 = -1 in byte land
-      else if (incoming && terminalToggle(1))
-      {
-        printing = true;               //prevents stop case
-        hapticMessage(incoming);       //set incoming byte to be played
-        Keyboard.write(incoming);
-        //Serial.write(incoming);        
-      }
-    }
-    if(Serial1.available() > 3){Serial1.write(XOFF);}//turn off ash to keep up
-    else{Serial1.write(XON);} //resume output of ash
-  #endif
-  return printing;
-}
-
-boolean terminalToggle(boolean returnVar)
-{
-  static boolean terminalMode = false;
-  if(returnVar){return terminalMode;} //preclude toggle
-  #ifdef YUN
-    terminalMode = !terminalMode;//terminal mode possible on yun
-  #endif
-}
-
 //----------------adjusting settings with pontentiometer---------
+#define ADJUST_POT A1
 #define PWM_ADJUST 4
 #define TIMING_ADJUST 5
 void potentiometer(byte mode)

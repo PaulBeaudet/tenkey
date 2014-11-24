@@ -62,7 +62,7 @@ byte holdFilter(byte input)
 byte homerow(byte input, byte progress)
 {
   if(progress == 7) {return input;}
-  if(input == SPACEBAR && progress > 20){modPress(LEFT_ALT);return 0;}
+  if(input == SPACEBAR && progress > 20){return 0;} //TODO reintroduce ALT
   return holdTiming(input, progress);
 }
 

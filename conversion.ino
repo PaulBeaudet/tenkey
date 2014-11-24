@@ -1,6 +1,6 @@
 //conversion.ino- Copyright Paul Beaudet 2014 -See License for reuse info
 //Depends on pgmspace
-#include<avr/pgmspace.h>//explicitly stated read only memory
+#include <avr/pgmspace.h>//explicitly stated read only memory
 //--ANOTHERS layout-- keys a-n-o-t-h-e-r-s make up the homerow 
 const byte chordPatterns[] PROGMEM = // alphabetical chord assignment
 // each byte is a series of bits that make up a chord
@@ -11,7 +11,6 @@ const byte chordPatterns[] PROGMEM = // alphabetical chord assignment
 }; // array ordered as alphabet (a->1, b->5, ect)
 
 #define TEST_THINGY 'n' + SPACEBAR
-
 const byte spaceParody[] PROGMEM = // space shift posibilities
 {//` , A
   '^',LEFT_ARROW,
@@ -40,8 +39,8 @@ boolean convertionMode(boolean toggle) //toggles numbers or letters mode
   return lettersMode;
 }
 
-#define L_THUMB        256  // int value of key data
-#define R_THUMB        512  // int value of key data
+#define L_THUMB 256  // int value of key data
+#define R_THUMB 512  // int value of key data
 byte patternToChar(int base) //returns the char value of a raw chord
 {// some convertions can explicitly imediately be returned 
   if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars
@@ -159,5 +158,10 @@ boolean needShift(byte letter)// does need shift?
 
 const byte SpecialToKBD[] PROGMEM =
 {//follows system definition up to NUM_LOCK
-  209,210,211,212,213,214,
+  0,209,210,211,212,213,214,215,8,9,176,216,217,176,218,
 };
+
+byte keyboardSpecial(byte letter)
+{
+  return pgm_read_byte(&SpecialToKBD[letter]);
+}

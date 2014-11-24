@@ -5,7 +5,9 @@
   reuse rights of any file associated with this project
 ********* See readme.md for hardware discription **************/
 #include <Wire.h>          // i2c 
-#include "selectHardware.h"//modify this file to use differant hardware
+#include "keyDefinitions.h" //define key numbers for various output types
+//switch board named file with your board found in "hardwareOptions" folder
+//eg -> yun.ino <-with-> hardwareOptions/uno.ino (if )
 
 #define MONITOR_MODE   0 // goto default behavior for multi-mode functions
 #define TRIGGER        1 // set enter key to press : enterBehavior()
@@ -63,7 +65,6 @@ void macros(byte letter)
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
   else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);} //Toggle to pwm
   else if(letter == 'l' + SPACEBAR){comboPress(LEFT_CTRL|LEFT_ALT,0,0);}
-  else if(letter == 'n' + SPACEBAR){Keyboard.releaseAll();}
   else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
   else if(letter == 'r' + SPACEBAR){recordHandlr(TRIGGER);}//start recording
   else if(letter == 's' + SPACEBAR){potentiometer(ADJUST_TIMING);}//toggle 
