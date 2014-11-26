@@ -71,28 +71,32 @@ byte heldASCII(byte chord)
   if(chord){holdTimes++;}
   else{holdTimes = 0;}
   
-  if(holdTimes == 1)// first hold
+  if(holdTimes == 4)// first hold
   {//letters covered by main layout
     if(chord > 95){return chord-SPACEBAR;} //shift cases
     else if(chord == '1'){;} //empty cases return 0 
     else {return chord;} //outside cases are repeating
   }
-  else if(holdTimes == 2) //second hold 
+  else if(holdTimes == 8) //second hold 
   {//letters covered by main layout
     if(chord > 95){return chord+SPACEBAR;} //macro cases 
-    else if(chord == '1'){return 129;} //TODO add backspace
+    else if(chord == '1'){return 129;} 
     else {return chord;} //outside cases are repeating
   }
-  else if(holdTimes > 2)
+  else if(holdTimes > 8)
   {
     if(chord < 95){return chord;}//outside main layout letters repeat
   }
   return 0; //cases not covered
 }
 
-byte doubleToASCII(int chord)
+byte doubleToASCII(byte letter)
 {
-  if(chord){return pgm_read_byte(&numberParody[chord-'`']);}
+  if(letter == TAB_KEY){return TAB_KEY;}
+  else if(letter == SPACEBAR){return SPACEBAR;}
+  else if(letter == BACKSPACE){return BACKSPACE;}
+  else if(letter == CARIAGE_RETURN){return CARIAGE_RETURN;}
+  else if(letter){return pgm_read_byte(&numberParody[letter-'`']);}
   return 0;
 }
 
