@@ -9,6 +9,7 @@
 //switch board named file with your board found in "hardwareOptions" folder
 //eg -> yun.ino <-with-> hardwareOptions/uno.ino (if )
 
+#define MONITOR_BUTTONS 33 // signal to monitor buttons
 #define MONITOR_MODE   0 // goto default behavior for multi-mode functions
 #define TRIGGER        1 // set enter key to press : enterBehavior()
 #define DEFAULT_MODE   1 // outputFilter: regular letters, potentiometer check
@@ -27,7 +28,7 @@ void setup()//setup the needed hardware
 
 void loop() 
 {
-  byte pressState = chordLoop(buttonSample());//<--important part
+  byte pressState = chordLoop();//<--important part
   // captures the current state of the buttons
   if(pressState)
   {   
@@ -35,13 +36,13 @@ void loop()
     {
       recordHandlr(pressState);//records presses to messageHandlr given active
       keyOut(pressState);      //actuate the press as a keystroke
-      messageHandlr(TRIGGER);  //letters can interupt
+      messageHandlr(TRIGGER);  //letters interupt messages
     } 
     else if(pressState > 159){keyOut(pressState);}//special cases like arrows
     else // if a macro pressState
     {
       macros(pressState);
-      messageHandlr(MONITOR_MODE);
+      messageHandlr(MONITOR_MODE);//TODO how does messagehandlr work here?
     } // otherwise read messages as available
   }//macros are exempt from interupting messageHandlr
   //EXTRA FEATURES 
@@ -51,6 +52,56 @@ void loop()
   serialBowl(); // check: terminal responses
 }
 
+//-- main chord interpertation flow control
+byte chordLoop()
+{
+  buttonUpdate();//updates internal button state
+  int chord = trueChord(MONITOR_MODE);
+  byte pressState = patternToChar(chord);
+  
+  if(pressState){feedback(chord);}
+  else{feedback(MONITOR_MODE);}
+  
+  byte actuation = 0;
+  byte hold = 0;
+  if(byte doubleClick = doubleToASCII(doubleEvent(pressState)))
+  {
+    keyOut(BACKSPACE);
+    actuation = doubleClick;
+    hold = doubleClick;
+  }
+  else if(pressState)
+  {
+    //Serial.write(pressState);
+    actuation = pressState;
+    hold = pressState;
+  }
+  
+  byte varifiedHold = 0;
+  hold = holdHandlr(hold);//check if there was a hold
+  if(hold)
+  {
+    varifiedHold = heldASCII(hold);//feed a true hold to held ASCII
+    if(varifiedHold && varifiedHold != hold){keyOut(BACKSPACE);}
+  }//only feed in hold events
+  else if(!buttonState(MONITOR_BUTTONS)){heldASCII(0);}//feed in release cases
+  
+  if(varifiedHold){actuation = varifiedHold;}
+  return actuation;
+}
+
+//-- feedback & state handling
+void feedback(int chord)
+{
+  if(chord){patternVibrate(chord, 0);}
+  else if(!buttonState(MONITOR_BUTTONS) && //no press -- release state
+          !messageHandlr(MONITOR_MODE) &&  //no messages in the que
+          !serialBowl())                   //no incomming serial interaction
+  {
+    patternVibrate(0, 0);
+    //TODO realease all key command
+  }//
+}
 //-- Special macro functions 
 void macros(byte letter)
 {

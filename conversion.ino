@@ -45,6 +45,7 @@ byte patternToChar(int base) //returns the char value of a raw chord
 {// some convertions can explicitly imediately be returned 
   if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars
   if(base == R_THUMB){return SPACEBAR;}//also doubles: first shift in a chord
+  if(base == 102){return TAB_KEY;} //number otherwise assigned to del possition
   if(base == (R_THUMB | L_THUMB)){return CARIAGE_RETURN;}
   //combination: space + backspace == Enter
   
@@ -63,6 +64,38 @@ byte patternToChar(int base) //returns the char value of a raw chord
   return 0;
 }
 
+byte heldASCII(byte chord)
+{
+  static byte holdTimes = 0;
+  
+  if(chord){holdTimes++;}
+  else{holdTimes = 0;}
+  
+  if(holdTimes == 1)// first hold
+  {//letters covered by main layout
+    if(chord > 95){return chord-SPACEBAR;} //shift cases
+    else if(chord == '1'){;} //empty cases return 0 
+    else {return chord;} //outside cases are repeating
+  }
+  else if(holdTimes == 2) //second hold 
+  {//letters covered by main layout
+    if(chord > 95){return chord+SPACEBAR;} //macro cases 
+    else if(chord == '1'){return 129;} //TODO add backspace
+    else {return chord;} //outside cases are repeating
+  }
+  else if(holdTimes > 2)
+  {
+    if(chord < 95){return chord;}//outside main layout letters repeat
+  }
+  return 0; //cases not covered
+}
+
+byte doubleToASCII(int chord)
+{
+  if(chord){return pgm_read_byte(&numberParody[chord-'`']);}
+  return 0;
+}
+
 byte charToPattern(byte letter)
 { // if any of 4 possible parodies line up
   for (byte i=0; i<PATTERNSIZE; i++)   
@@ -76,6 +109,7 @@ byte charToPattern(byte letter)
   }// TODO return int with animation signals to differ parodies
   return 0; // no match case
 }
+
 //----------Animations---------------
 const byte frameStore[] PROGMEM =
 {// 0 possition identifies type; other possitions are frames

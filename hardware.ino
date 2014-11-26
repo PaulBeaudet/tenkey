@@ -16,7 +16,7 @@ void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
   TWBR = 12; // upgrade to 400KHz!
 }
 
-void patternVibrate(int pins, int intensityChange = 0)
+void patternVibrate(int pins, int intensityChange)
 { //set state of all pagers in one function
   static int intensity = 4095;  // 0 being off and 4095 being most intense
   if (intensityChange){intensity = intensityChange; return;}
@@ -42,14 +42,14 @@ boolean hapticMessage(byte letter, int spacing = 0)
     if(byte validPatern = charToPattern(letter))
     {
       ptimeCheck(timing);
-      patternVibrate(validPatern);
+      patternVibrate(validPatern, 0);
       animated = false;
     }
     else if(byte validAnimation = getFrame(0, letter))
     {//if 0 frame is availible for this letter
       int adjustedTime = timing / 2 + timing;
       ptimeCheck(adjustedTime/NUMPAGERS); // a fraction of alotted time
-      patternVibrate(validAnimation);
+      patternVibrate(validAnimation, 0);
       animated = true;
     } // in this way invalid entries are skipped message reads true for such
     return false;//why bother checking time... we just set it
@@ -73,7 +73,7 @@ boolean typicalLetter(int timing)
     else          //durring the letter buzz phase
     {
       touchPause=!touchPause;    //flag pause time to start
-      patternVibrate(0);         //stop letter feedback
+      patternVibrate(0, 0);         //stop letter feedback
       ptimeCheck(timing/2);//set pause time
     };
   }
@@ -93,7 +93,7 @@ boolean animatedProcess(int timing)
       getFrame(0,TRIGGER); //reset framer
       return true;   // animation complete
     }
-    patternVibrate(getFrame(frame)); //start to play frame
+    patternVibrate(getFrame(frame), 0); //start to play frame
     int adjustedTime = timing / 2 + timing;
     ptimeCheck(adjustedTime/NUMPAGERS);    //devides frame increments
   }
@@ -101,7 +101,7 @@ boolean animatedProcess(int timing)
 }
 
 //--------------- Buttons  ---------------
-const uint8_t buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
+/*const uint8_t buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
 // pins can be aligned in here if miswired: try to do it right in hardware
 void buttonUp()// it's cold out there, set up the buttons 
 { //  set every button as an input with internal pull-up resistence
@@ -129,7 +129,7 @@ byte chordLoop(int input) // takes sample of buttons: returns true for press
   //      except for special printing cases     release:turn pagers off
   return inputFilter(actionableSample);
 }//            debounce -> check hold -> return ASCII:letter or action code
-
+*/
 //----------------adjusting settings with pontentiometer---------
 #define ADJUST_POT A1
 #define PWM_ADJUST 4

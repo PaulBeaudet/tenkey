@@ -78,7 +78,8 @@ boolean bootCheck()
       bootHandler(YUN_BOOT_OUTPUT);
       booting = true;    //buffer filled before user interaction was possible
     }
-    if(inputFilter(patternToChar(buttonSample())) == 's' && !booting)//esc
+    buttonUpdate();
+    if(patternToChar(trueChord(MONITOR_MODE)) == 's' && !booting)//esc
     {ptimeCheck(1); break;}//prep timer for possible imediatete rec case.
   }                      // timer returns true when finished exiting loop
   if (booting)
