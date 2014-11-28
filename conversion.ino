@@ -64,6 +64,30 @@ byte patternToChar(int base) //returns the char value of a raw chord
   return 0;
 }
 
+byte patternToGame(int chord)
+{
+  if(chord == 1){return RIGHT_ARROW;}
+  if(chord == 2){return UP_ARROW;}
+  if(chord == 4){return 's';}
+  if(chord == 8){return 'b';}
+  if(chord == 16){return 'a';}
+  if(chord == 32){return 'c';}
+  if(chord == 64){return DOWN_ARROW;}
+  if(chord == 128){return LEFT_ARROW;}
+  if(chord == L_THUMB){return 154;}
+  return 0;
+}
+
+byte gameHold(byte control)
+{
+  static byte holdTimes = 0;
+  if(control){holdTimes++;}
+  else{holdTimes = 0;}
+  
+  if(holdTimes % 2 == 0){return control;}
+  return 0;
+}
+
 byte heldASCII(byte chord)
 {
   static byte holdTimes = 0;

@@ -28,7 +28,9 @@ void setup()//setup the needed hardware
 
 void loop() 
 {
-  byte pressState = chordLoop();//<--important part
+  byte pressState;
+  if(gameMode(MONITOR_MODE)){pressState = gameLoop();}
+  else{pressState = chordLoop();}//<--important part
   // captures the current state of the buttons
   if(pressState)
   {   
@@ -72,7 +74,6 @@ byte chordLoop()
   }
   else if(pressState)
   {
-    //Serial.write(pressState);
     actuation = pressState;
     hold = pressState;
   }
@@ -90,6 +91,29 @@ byte chordLoop()
   return actuation;
 }
 
+byte gameLoop() //loop that serves as a gamepad layout
+{
+  buttonUpdate();
+  int chord = trueChord(MONITOR_MODE);
+  byte pressState = patternToGame(chord);
+  //add feedback if desired
+  byte actuation = 0;
+  byte hold = 0;
+  if(pressState)
+  {
+    actuation = pressState;
+    hold = pressState;
+  }
+  
+  byte varifiedHold = 0;
+  hold = holdHandlr(hold);//check if there was a hold
+  if(hold){varifiedHold = gameHold(hold);}//only feed in hold events
+  else if(!buttonState(MONITOR_BUTTONS)){gameHold(0);}//feed in release cases
+  if(varifiedHold){actuation = varifiedHold;}
+  
+  return actuation;
+}
+
 //-- feedback & state handling
 void feedback(int chord)
 {
@@ -102,6 +126,7 @@ void feedback(int chord)
     //TODO realease all key command
   }//
 }
+
 //-- Special macro functions 
 void macros(byte letter)
 {
@@ -114,7 +139,7 @@ void macros(byte letter)
   else if(letter == 'c' + SPACEBAR){comboPress(LEFT_CTRL, 'c', 0);}//copy
   else if(letter == 'g' + SPACEBAR){keyOut(LEFT_GUI);} //search on many OSes
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
-  else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);} //Toggle to pwm
+  else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);}//Toggle to pwm
   else if(letter == 'l' + SPACEBAR){comboPress(LEFT_CTRL|LEFT_ALT,0,0);}
   else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
   else if(letter == 'r' + SPACEBAR){recordHandlr(TRIGGER);}//start recording
@@ -122,4 +147,12 @@ void macros(byte letter)
   else if(letter == 't' + SPACEBAR){terminalToggle(0);}//toggle terminal shell
   else if(letter == 'v' + SPACEBAR){comboPress(LEFT_CTRL,'v',0);}//paste
   else if(letter == 'x' + SPACEBAR){comboPress(LEFT_CTRL,'x',0);}//cut
+  else if(letter == 'z' + SPACEBAR){gameMode(TRIGGER);}//toggle gamemode
+}
+
+boolean gameMode(boolean toggle)
+{
+  static boolean onOff = false;
+  if(toggle){onOff = !onOff;}
+  return onOff;
 }
