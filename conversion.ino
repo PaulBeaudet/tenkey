@@ -83,7 +83,6 @@ byte gameHold(byte control)
   static byte holdTimes = 0;
   if(control){holdTimes++;}
   else{holdTimes = 0;}
-  
   if(holdTimes % 2 == 0){return control;}
   return 0;
 }
@@ -94,7 +93,7 @@ byte heldASCII(byte chord)
   
   if(chord){holdTimes++;}
   else{holdTimes = 0;}
-  
+
   if(holdTimes == 4)// first hold
   {//letters covered by main layout
     if(chord > 95){return chord-SPACEBAR;} //shift cases

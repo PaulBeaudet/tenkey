@@ -86,7 +86,7 @@ byte chordLoop()
     if(varifiedHold && varifiedHold != hold){keyOut(BACKSPACE);}
   }//only feed in hold events
   else if(!buttonState(MONITOR_BUTTONS)){heldASCII(0);}//feed in release cases
-  
+
   if(varifiedHold){actuation = varifiedHold;}
   return actuation;
 }
@@ -104,13 +104,11 @@ byte gameLoop() //loop that serves as a gamepad layout
     actuation = pressState;
     hold = pressState;
   }
-  
   byte varifiedHold = 0;
   hold = holdHandlr(hold);//check if there was a hold
   if(hold){varifiedHold = gameHold(hold);}//only feed in hold events
   else if(!buttonState(MONITOR_BUTTONS)){gameHold(0);}//feed in release cases
   if(varifiedHold){actuation = varifiedHold;}
-  
   return actuation;
 }
 
