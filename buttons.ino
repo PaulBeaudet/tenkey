@@ -1,10 +1,10 @@
 //button.ino -- copyright(c)2014 Paul Beaudet, see licence for details
 #define BOUNCETIME 5//ms  /wait this long to be sure of a legit press
-#define HOLDSTATE 50//ms /wait this long for a hold cycle
-#define DOUBLETIME 230// GO! BILLY BANKS STYLE!
+#define HOLDSTATE 60//ms /wait this long for a hold cycle
+#define DOUBLETIME 210// GO! BILLY BANKS STYLE!
 #define TRIGRAMTIME  40 //time it takes for a three letter chord to recognize
-#define BIGRAMTIME   43 //weee snaw!
-#define UNIGRAMTIME  47 //time it takes for a single press to be recognised
+#define BIGRAMTIME   50 //weee snaw!
+#define UNIGRAMTIME  70 //time it takes for a single press to be recognised
 //--------- Button pin-out
 byte buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
 
