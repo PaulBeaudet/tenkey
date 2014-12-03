@@ -41,14 +41,11 @@ void loop()
       messageHandlr(TRIGGER);  //letters interupt messages
     } 
     else if(pressState > 159){keyOut(pressState);}//special cases like arrows
-    else // if a macro pressState
-    {
-      macros(pressState);
-      messageHandlr(MONITOR_MODE);//TODO how does messagehandlr work here?
-    } // otherwise read messages as available
+    else{macros(pressState);} //in all other cases check for macros
   }//macros are exempt from interupting messageHandlr
   //EXTRA FEATURES
   feedbackAndRelease();//controls pager feedback and release control
+  messageHandlr(MONITOR_MODE);//handles incoming messages
   listenForMessage();// grab potential messages over usb serial
   potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
   //Yun specific
@@ -113,15 +110,22 @@ byte gameLoop() //loop that serves as a gamepad layout
 //-- feedback & state handling
 void feedbackAndRelease()
 {
-  int currentState = buttonState(MONITOR_BUTTONS);
+  boolean pressed = false;
   
-  if(patternToChar(currentState)){patternVibrate(currentState, 0);}
-  else if(!buttonState(MONITOR_BUTTONS) && //no press -- release state
-          !messageHandlr(MONITOR_MODE) &&  //no messages in the que
-          !serialBowl())                   //no incomming serial interaction
+  int currentState = buttonState(MONITOR_BUTTONS);
+  if(patternToChar(currentState) && !pressed)
+  {
+    patternVibrate(currentState, 0);
+    pressed == true;
+  }
+  else if( pressed &&                     //has been pressed
+          !currentState &&                //no press -- release state
+          !messageHandlr(MONITOR_MODE) && //no messages in the que
+          !serialBowl())                  //no incomming serial interaction
   {
     patternVibrate(0, 0);
-    comboPress(0,0,0);//release 
+    comboPress(0,0,0);//release
+    pressed = false; 
   }//
 }
 
