@@ -127,7 +127,7 @@ byte charToPattern(byte letter)
 { // if any of 4 possible parodies line up
   for (byte i=0; i<PATTERNSIZE; i++)   
   {// for all of the key mapping
-    if( letter == ('`'+ i) )                      //typical letter patterns
+    if( letter == ('`'+ i) || letter == ('@' + i))//typical letter patterns
     {return pgm_read_byte(&chordPatterns[i]);}    //TODO output shift case
     if( letter == pgm_read_byte(&spaceParody[i])) //space combination cases
     {return pgm_read_byte(&chordPatterns[i]);}
