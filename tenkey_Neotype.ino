@@ -47,7 +47,8 @@ void loop()
       messageHandlr(MONITOR_MODE);//TODO how does messagehandlr work here?
     } // otherwise read messages as available
   }//macros are exempt from interupting messageHandlr
-  //EXTRA FEATURES 
+  //EXTRA FEATURES
+  feedbackAndRelease();//controls pager feedback and release control
   listenForMessage();// grab potential messages over usb serial
   potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
   //Yun specific
@@ -60,9 +61,6 @@ byte chordLoop()
   buttonUpdate();//updates internal button state
   int chord = trueChord(MONITOR_MODE);
   byte pressState = patternToChar(chord);
-  
-  if(pressState){feedback(chord);}
-  else{feedback(MONITOR_MODE);}
   
   byte actuation = 0;
   byte hold = 0;
@@ -113,15 +111,17 @@ byte gameLoop() //loop that serves as a gamepad layout
 }
 
 //-- feedback & state handling
-void feedback(int chord)
+void feedbackAndRelease()
 {
-  if(chord){patternVibrate(chord, 0);}
+  int currentState = buttonState(MONITOR_BUTTONS);
+  
+  if(patternToChar(currentState)){patternVibrate(currentState, 0);}
   else if(!buttonState(MONITOR_BUTTONS) && //no press -- release state
           !messageHandlr(MONITOR_MODE) &&  //no messages in the que
           !serialBowl())                   //no incomming serial interaction
   {
     patternVibrate(0, 0);
-    //TODO realease all key command
+    comboPress(0,0,0);//release 
   }//
 }
 
