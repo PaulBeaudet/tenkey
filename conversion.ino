@@ -87,28 +87,30 @@ byte gameHold(byte control)
   return 0;
 }
 
-byte heldASCII(byte chord)
+byte heldASCII(byte letter)
 {
   static byte holdTimes = 0;
   
-  if(chord){holdTimes++;}
+  if(letter){holdTimes++;}
   else{holdTimes = 0;}
-
+  
+  if(holdTimes == 3 && letter > 95){return BACKSPACE;}
   if(holdTimes == 4)// first hold
   {//letters covered by main layout
-    if(chord > 95){return chord-SPACEBAR;} //shift cases
-    else if(chord == '1'){;} //empty cases return 0 
-    else {return chord;} //outside cases are repeating
+    if(letter > 95){return letter-SPACEBAR;} //shift cases
+    if(letter == '1'){return 0;} //empty cases return 0 
+    return letter; //outside cases are repeating
   }
-  else if(holdTimes == 8) //second hold 
+  if(holdTimes == 7 && letter > 95){return BACKSPACE;}
+  if(holdTimes == 8) //second hold 
   {//letters covered by main layout
-    if(chord > 95){return chord+SPACEBAR;} //macro cases 
-    else if(chord == '1'){return 129;} 
-    else {return chord;} //outside cases are repeating
+    if(letter > 95){return letter+SPACEBAR;} //macro cases 
+    if(letter == '1'){return 129;} 
+    return letter; //outside cases are repeating
   }
-  else if(holdTimes > 8)
-  {
-    if(chord < 95){return chord;}//outside main layout letters repeat
+  if(holdTimes > 8)
+  {//outside main layout letters repeat
+    if(letter < 95 && letter != '1' ){return letter;}
   }
   return 0; //cases not covered
 }
@@ -116,8 +118,8 @@ byte heldASCII(byte chord)
 byte doubleToASCII(byte letter)
 {
   if(letter == TAB_KEY){return TAB_KEY;}
-  else if(letter == SPACEBAR){return SPACEBAR;}
-  else if(letter == BACKSPACE){return BACKSPACE;}
+  else if(letter == SPACEBAR){return 0;}
+  else if(letter == BACKSPACE){return 0;}
   else if(letter == CARIAGE_RETURN){return CARIAGE_RETURN;}
   else if(letter){return pgm_read_byte(&numberParody[letter-'`']);}
   return 0;

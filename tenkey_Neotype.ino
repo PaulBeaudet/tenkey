@@ -28,6 +28,18 @@ void setup()//setup the needed hardware
 
 void loop() 
 {
+  mainIOroutine(); //handles key input and output
+  //EXTRA FEATURES
+  feedbackAndRelease();//controls pager feedback and release control
+  messageHandlr(MONITOR_MODE);//handles incoming messages
+  listenForMessage();// grab potential messages over usb serial
+  potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
+  //Yun specific
+  serialBowl(); // check: terminal responses
+}
+//-- main IO flow control
+byte mainIOroutine()
+{
   byte pressState;
   if(gameMode(MONITOR_MODE)){pressState = gameLoop();}
   else{pressState = chordLoop();}//<--important part
@@ -43,29 +55,29 @@ void loop()
     else if(pressState > 159){keyOut(pressState);}//special cases like arrows
     else{macros(pressState);} //in all other cases check for macros
   }//macros are exempt from interupting messageHandlr
-  //EXTRA FEATURES
-  feedbackAndRelease();//controls pager feedback and release control
-  messageHandlr(MONITOR_MODE);//handles incoming messages
-  listenForMessage();// grab potential messages over usb serial
-  potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
-  //Yun specific
-  serialBowl(); // check: terminal responses
+  return pressState;
 }
-
 //-- main chord interpertation flow control
 byte chordLoop()
 {
+  static byte doubleActuation;
+  
+  byte actuation = 0;
+  if(doubleActuation)
+  {
+    actuation = doubleActuation;
+    doubleActuation = 0;
+    return actuation;
+  }
+  
   buttonUpdate();//updates internal button state
   int chord = trueChord(MONITOR_MODE);
   byte pressState = patternToChar(chord);
-  
-  byte actuation = 0;
   byte hold = 0;
-  if(byte doubleClick = doubleToASCII(doubleEvent(pressState)))
+  if(doubleActuation = doubleToASCII(doubleEvent(pressState)))
   {
-    keyOut(BACKSPACE);
-    actuation = doubleClick;
-    hold = doubleClick;
+    actuation = BACKSPACE;
+    hold = doubleActuation;
   }
   else if(pressState)
   {
@@ -75,11 +87,7 @@ byte chordLoop()
   
   byte varifiedHold = 0;
   hold = holdHandlr(hold);//check if there was a hold
-  if(hold)
-  {
-    varifiedHold = heldASCII(hold);//feed a true hold to held ASCII
-    if(varifiedHold && varifiedHold != hold){keyOut(BACKSPACE);}
-  }//only feed in hold events
+  if(hold){varifiedHold = heldASCII(hold);}//only feed in hold events
   else if(!buttonState(MONITOR_BUTTONS)){heldASCII(0);}//feed in release cases
 
   if(varifiedHold){actuation = varifiedHold;}
