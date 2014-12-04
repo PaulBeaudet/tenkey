@@ -15,16 +15,20 @@ void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
   TWBR = 12; // upgrade to 400KHz!
 }
 
-void patternVibrate(int pins, int intensityChange)
-{ //set state of all pagers in one function
+int pagerIntensity(int intensityChange)
+{
   static int intensity = 4095;  // 0 being off and 4095 being most intense
-  if (intensityChange){intensity = intensityChange; return;}
-  
+  if(intensityChange){intensity = intensityChange;}
+  else{return intensity;}
+}
+
+void patternVibrate(int pins)
+{ //set state of all pagers in one function
   byte j = COUNTBACKPAGERS; // For oppisite direction, if forward remove
   for (byte i=0; i<NUMPAGERS; i++) 
   { // incoming int set bit by bit: high bits: pagers need to be active
-    if (pins & (1 << i)) { pagers.setPWM( j, 0, intensity); }//<--- j to i
-    else/*set pager off*/{ pagers.setPWM( j, 0, 0); }//change j to i if forward
+    if (pins & (1 << i)) { pagers.setPWM( j, 0, pagerIntensity(MONITOR_MODE));}
+    else                 { pagers.setPWM( j, 0, 0); }//change j to i if forward
     j--;// remove if forward oriented
   }
 }
@@ -53,14 +57,14 @@ boolean hapticMessage(byte letter, int spacing = 0)
     if(byte validPatern = charToPattern(letter))
     {
       ptimeCheck(timing);
-      patternVibrate(validPatern, 0);
+      patternVibrate(validPatern);
       animated = false;
     }
     else if(byte validAnimation = getFrame(0, letter))
     {//if 0 frame is availible for this letter
       int adjustedTime = timing / 2 + timing;
       ptimeCheck(adjustedTime/NUMPAGERS); // a fraction of alotted time
-      patternVibrate(validAnimation, 0);
+      patternVibrate(validAnimation);
       animated = true;
     } // in this way invalid entries are skipped message reads true for such
     return false;//why bother checking time... we just set it
@@ -84,7 +88,7 @@ boolean typicalLetter(int timing)
     else          //durring the letter buzz phase
     {
       touchPause=!touchPause;    //flag pause time to start
-      patternVibrate(0, 0);         //stop letter feedback
+      patternVibrate(0);         //stop letter feedback
       ptimeCheck(timing/2);//set pause time
     };
   }
@@ -104,7 +108,7 @@ boolean animatedProcess(int timing)
       getFrame(0,TRIGGER); //reset framer
       return true;   // animation complete
     }
-    patternVibrate(getFrame(frame), 0); //start to play frame
+    patternVibrate(getFrame(frame)); //start to play frame
     int adjustedTime = timing / 2 + timing;
     ptimeCheck(adjustedTime/NUMPAGERS);    //devides frame increments
   }
@@ -252,7 +256,7 @@ void potentiometer(byte mode)
     potReturn(potValue);
   }
   else if (mode == PWM_ADJUST)
-  {patternVibrate(0, map(potValue, 0, 1023, 0, 4095));}
+  {pagerIntensity(map(potValue, 0, 1023, 0, 4095));}
   else if (mode == TIMING_ADJUST)
   {hapticMessage(0, map(potValue, 0, 1023, 100, 2000));}
 }
