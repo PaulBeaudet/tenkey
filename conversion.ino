@@ -10,7 +10,6 @@ const byte chordPatterns[] PROGMEM = // alphabetical chord assignment
    64, 32,  3,  9,  2,  1, 16, 12,129, 66, 14, 36,112,224,195,  7,165,102
 }; // array ordered as alphabet (a->1, b->5, ect)
 
-#define TEST_THINGY 'n' + SPACEBAR
 const byte spaceParody[] PROGMEM = // space shift posibilities
 {//` , A
   '^',LEFT_ARROW,
@@ -21,7 +20,7 @@ const byte spaceParody[] PROGMEM = // space shift posibilities
   '.','+','=',
   UP_ARROW, RIGHT_ARROW,// R7/ S8
 // T4/ u / v / w / x / y / z / { / | / } / ~ /del
-  ',',';','<','>','*', 92,'+','(','-',')','#',TEST_THINGY
+  ',',';','<','>','*', 92,'+','(','-',')','#',TAB_KEY
 };
 
 const byte numberParody[] PROGMEM = // option shift to numbers
@@ -64,29 +63,6 @@ byte patternToChar(int base) //returns the char value of a raw chord
   return 0;
 }
 
-byte patternToGame(int chord)
-{
-  if(chord == 1){return RIGHT_ARROW;}
-  if(chord == 2){return UP_ARROW;}
-  if(chord == 4){return 's';}
-  if(chord == 8){return 'b';}
-  if(chord == 16){return 'a';}
-  if(chord == 32){return 'c';}
-  if(chord == 64){return DOWN_ARROW;}
-  if(chord == 128){return LEFT_ARROW;}
-  if(chord == L_THUMB){return 154;}
-  return 0;
-}
-
-byte gameHold(byte control)
-{
-  static byte holdTimes = 0;
-  if(control){holdTimes++;}
-  else{holdTimes = 0;}
-  if(holdTimes % 2 == 0){return control;}
-  return 0;
-}
-
 byte heldASCII(byte letter)
 {
   static byte holdTimes = 0;
@@ -110,7 +86,11 @@ byte heldASCII(byte letter)
   }
   if(holdTimes > 8)
   {//outside main layout letters repeat
-    if(letter < 95 && letter != '1' ){return letter;}
+    if(letter == SPACEBAR)
+    {
+      if(holdTimes == 9){return 'j' + SPACEBAR;}//creat alt press event
+    }
+    else if(letter < 95 && letter != '1' ){return letter;}
   }
   return 0; //cases not covered
 }

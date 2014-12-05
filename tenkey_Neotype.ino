@@ -40,9 +40,7 @@ void loop()
 //-- main IO flow control
 byte mainIOroutine()
 {
-  byte pressState;
-  if(gameMode(MONITOR_MODE)){pressState = gameLoop();}
-  else{pressState = chordLoop();}//<--important part
+  byte pressState = chordLoop();//<--important part
   // captures the current state of the buttons
   if(pressState)
   {   
@@ -57,6 +55,7 @@ byte mainIOroutine()
   }//macros are exempt from interupting messageHandlr
   return pressState;
 }
+
 //-- main chord interpertation flow control
 byte chordLoop()
 {
@@ -94,45 +93,25 @@ byte chordLoop()
   return actuation;
 }
 
-byte gameLoop() //loop that serves as a gamepad layout
-{
-  buttonUpdate();
-  int chord = trueChord(MONITOR_MODE);
-  byte pressState = patternToGame(chord);
-  //add feedback if desired
-  byte actuation = 0;
-  byte hold = 0;
-  if(pressState)
-  {
-    actuation = pressState;
-    hold = pressState;
-  }
-  byte varifiedHold = 0;
-  hold = holdHandlr(hold);//check if there was a hold
-  if(hold){varifiedHold = gameHold(hold);}//only feed in hold events
-  else if(!buttonState(MONITOR_BUTTONS)){gameHold(0);}//feed in release cases
-  if(varifiedHold){actuation = varifiedHold;}
-  return actuation;
-}
-
 //-- feedback & state handling
 void feedbackAndRelease()
 {
-  boolean pressed = false;
+  static boolean pressed = false;
   
   int currentState = buttonState(MONITOR_BUTTONS);
   if(patternToChar(currentState) && !pressed)
   {
-    patternVibrate(currentState, 0);
+    patternVibrate(currentState);
     pressed == true;
   }
-  else if( pressed &&                     //has been pressed
-          !currentState &&                //no press -- release state
-          !messageHandlr(MONITOR_MODE) && //no messages in the que
-          !serialBowl())                  //no incomming serial interaction
+  else if( pressed                        //has been pressed
+          && !currentState                //no press -- release state
+          && !messageHandlr(MONITOR_MODE) //no messages in the que
+          && !serialBowl())           //no incomming serial interaction
   {
-    patternVibrate(0, 0);
-    comboPress(0,0,0);//release
+    Serial.println("*");
+    patternVibrate(0);
+    releaseKey();//release
     pressed = false; 
   }//
 }
@@ -146,20 +125,12 @@ void macros(byte letter)
     if(recordHandlr(MONITOR_MODE)){;}
     else{messageHandlr(RECORD_CAT);}
   }
-  else if(letter == 'g' + SPACEBAR){keyOut(LEFT_GUI);} //search on many OSes
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
   else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);}//Toggle to pwm
+  else if(letter == 'j' + SPACEBAR){comboPress(LEFT_ALT,0,0);}
   else if(letter == 'l' + SPACEBAR){comboPress(LEFT_CTRL|LEFT_ALT,0,0);}
   else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
   else if(letter == 'r' + SPACEBAR){recordHandlr(TRIGGER);}//start recording
   else if(letter == 's' + SPACEBAR){potentiometer(ADJUST_TIMING);}//toggle 
   else if(letter == 't' + SPACEBAR){terminalToggle(0);}//toggle terminal shell
-  else if(letter == 'z' + SPACEBAR){gameMode(TRIGGER);}//toggle gamemode
-}
-
-boolean gameMode(boolean toggle)
-{
-  static boolean onOff = false;
-  if(toggle){onOff = !onOff;}
-  return onOff;
 }
