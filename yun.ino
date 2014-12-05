@@ -6,6 +6,7 @@ void serialInterfaceUp()
 {
   Serial.begin(9600);// COM with Bluefruit EZ key HID or pyserial
   Keyboard.begin();//begin wired via usb keyboard
+  Mouse.begin();   //begin wired mouse interactions
   Serial1.begin(250000); // begin communication with dd-wrt ash terminal
   // make sure linux has booted and shutdown bridge
   bootCheck(); // returns true for boot, full boot takes about 60sec
@@ -15,11 +16,19 @@ void serialInterfaceUp()
 //-------------Writing keys to host----------
 void keyOut(byte keyPress)
 {
+  static boolean terminalMode = false;
+  if(keyPress == 't' + SPACEBAR){terminalMode = !terminalMode; return;}
+
   if(keyPress < FUNC_F1){Keyboard.write(keyboardSpecial(keyPress));} 
   else {Keyboard.write(keyPress);}
   if(keyPress == CARIAGE_RETURN){keyPress = NEW_LINE;}//linux return call
-  if(terminalToggle(1)){Serial1.write(keyPress);}
-  Serial.write(keyPress); // bluefruit or the uno or conection with pyserial
+  if(terminalMode){Serial1.write(keyPress);}
+  //Serial.write(keyPress); // bluefruit or the uno or conection with pyserial
+}
+
+void releaseKey()
+{
+  Keyboard.releaseAll();
 }
 
 void comboPress(byte modifiers, byte key1, byte key2)
@@ -32,26 +41,9 @@ void comboPress(byte modifiers, byte key1, byte key2)
   if(key1){Keyboard.press(key1);}
   if(key2){Keyboard.press(key2);}
   Keyboard.releaseAll();
-  // to pyserial
-  if(needShift(key1)){modifiers=modifiers|LEFT_SHIFT;}//NOTE affects key2
-  key1 = letterToBT(key1);
-  if(key2){key2 = letterToBT(key2);} // in the rare case a second mod is needed
-  //key sequence for EZ-Key and Host application
-  Serial.write(0xFD); // our command: 0xfd
-  Serial.write(modifiers); // modifier!
-  Serial.write((byte)0); // 0x00
-  Serial.write(key1); // key code #1
-  Serial.write(key2); // key code #2
-  Serial.write((byte)0); // key code #3
-  Serial.write((byte)0); // key code #4
-  Serial.write((byte)0); // key code #5
-  Serial.write((byte)0); // key code #6
 }
 
 //---------- YUN specific --------------
-#define XON            17 // control_Q resume terminal output
-#define XOFF           19 // control_S stop terminal output
-
 void bridgeShutdown()
 {
   Serial1.write((uint8_t *)"\xff\0\0\x05XXXXX\x7f\xf9", 11);//shutdown bridge
@@ -93,29 +85,37 @@ boolean bootCheck()
   return booting;        //in case of conditions looking for boot
 }
 
-boolean serialBowl()
+#define XON            17 // control_Q resume terminal output
+#define XOFF           19 // control_S stop terminal output
+boolean serialBowl(boolean terminalToggle)
 { // keep the alphabits from overflowing
+  static boolean terminalMode = false;
   static boolean printing = false;    //signal activity to outside loop
-  if(hapticMessage(MONITOR_MODE))   //letter played or boot has occurred
+  static byte letterInWaiting = 0;
+
+  if(terminalToggle)
   {
-    byte incoming = Serial1.read(); //read off a byte regardless
-    if (incoming == 255){printing = false;}  //255 = -1 in byte land
-    else if (incoming && terminalToggle(1))
+    terminalMode = !terminalMode;
+    keyOut('t' + SPACEBAR); // also toggle terminal mode in keyOut routine
+  }
+
+  if(terminalMode)
+  {
+    if(!letterInWaiting){letterInWaiting = Serial1.read();}
+    if(letterInWaiting == 255){printing = false; letterInWaiting = 0;}
+    else if(hapticMessage(MONITOR_MODE))   //letter played or boot has occurred
     {
-      printing = true;               //prevents stop case
-      hapticMessage(incoming);       //set incoming byte to be played
-      Keyboard.write(incoming);
-      //Serial.write(incoming);        
+      if(letterInWaiting)
+      {
+        printing = true;               //prevents stop case
+        hapticMessage(letterInWaiting);       //set incoming byte to be played
+        Keyboard.write(letterInWaiting);      //show user char via Keyboard
+        letterInWaiting = 0;
+      }
     }
   }
-  if(Serial1.available() > 3){Serial1.write(XOFF);}//turn off ash to keep up
+  //turning ASH on and off, in order to keep up with output
+  if(Serial1.available() > 3){Serial1.write(XOFF);}
   else{Serial1.write(XON);} //resume output of ash
   return printing;
-}
-
-boolean terminalToggle(boolean returnVar)
-{
-  static boolean terminalMode = false;
-  if(returnVar){return terminalMode;} //preclude toggle
-  terminalMode = !terminalMode;//terminal mode possible on yun
 }

@@ -35,7 +35,7 @@ void loop()
   listenForMessage();// grab potential messages over usb serial
   potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
   //Yun specific
-  serialBowl(); // check: terminal responses
+  serialBowl(MONITOR_MODE); // check: terminal responses
 }
 //-- main IO flow control
 byte mainIOroutine()
@@ -96,24 +96,27 @@ byte chordLoop()
 //-- feedback & state handling
 void feedbackAndRelease()
 {
-  static boolean pressed = false;
+  static boolean held = false;
   
   int currentState = buttonState(MONITOR_BUTTONS);
-  if(patternToChar(currentState) && !pressed)
+  if(patternToChar(currentState))
   {
     patternVibrate(currentState);
-    pressed == true;
+    held = true;
   }
-  else if( pressed                        //has been pressed
-          && !currentState                //no press -- release state
-          && !messageHandlr(MONITOR_MODE) //no messages in the que
-          && !serialBowl())           //no incomming serial interaction
+  else if( held && vibInactive() )
   {
-    Serial.println("*");
     patternVibrate(0);
-    releaseKey();//release
-    pressed = false; 
-  }//
+    releaseKey();
+    held = false;
+  }
+}
+
+boolean vibInactive() //check other function controling vibrators
+{ //extended AND opperation for readability
+  if(serialBowl(MONITOR_MODE)){return false;} //if terminal mode is printing
+  if(messageHandlr(MONITOR_MODE)){return false;} //if message mode is printing
+  return true; // as long as everything is inactive return true
 }
 
 //-- Special macro functions 
@@ -132,5 +135,5 @@ void macros(byte letter)
   else if(letter == 'p' + SPACEBAR){potentiometer(DEFAULT_MODE);}//show value
   else if(letter == 'r' + SPACEBAR){recordHandlr(TRIGGER);}//start recording
   else if(letter == 's' + SPACEBAR){potentiometer(ADJUST_TIMING);}//toggle 
-  else if(letter == 't' + SPACEBAR){terminalToggle(0);}//toggle terminal shell
+  else if(letter == 't' + SPACEBAR){serialBowl(TRIGGER);}//toggle terminal
 }
