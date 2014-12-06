@@ -44,7 +44,7 @@ byte patternToChar(int base) //returns the char value of a raw chord
 {// some convertions can explicitly imediately be returned 
   if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars
   if(base == R_THUMB){return SPACEBAR;}//also doubles: first shift in a chord
-  if(base == 102){return TAB_KEY;} //number otherwise assigned to del possition
+  if(base == 102){return 0;} //number otherwise assigned to del possition
   if(base == (R_THUMB | L_THUMB)){return CARIAGE_RETURN;}
   //combination: space + backspace == Enter
   
@@ -70,6 +70,17 @@ byte heldASCII(byte letter)
   if(letter){holdTimes++;}
   else{holdTimes = 0;}
   
+  if(letter == SPACEBAR)
+  {
+    if(holdTimes == 5){return BACKSPACE;}
+    if(holdTimes == 6){return 138;}// 'j' plus SPACEBAR
+    return 0;
+  }
+  if(letter == TAB_KEY)
+  {
+    return 0;
+  }
+  
   if(holdTimes == 3 && letter > 95){return BACKSPACE;}
   if(holdTimes == 4)// first hold
   {//letters covered by main layout
@@ -86,21 +97,17 @@ byte heldASCII(byte letter)
   }
   if(holdTimes > 8)
   {//outside main layout letters repeat
-    if(letter == SPACEBAR)
-    {
-      if(holdTimes == 9){return 'j' + SPACEBAR;}//creat alt press event
-    }
-    else if(letter < 95 && letter != '1' ){return letter;}
+    if(letter < 95 && letter != '1' ){return letter;}
   }
   return 0; //cases not covered
 }
 
 byte doubleToASCII(byte letter)
 {
-  if(letter == TAB_KEY){return TAB_KEY;}
+  if(letter == TAB_KEY){return 0;}
   else if(letter == SPACEBAR){return 0;}
   else if(letter == BACKSPACE){return 0;}
-  else if(letter == CARIAGE_RETURN){return CARIAGE_RETURN;}
+  else if(letter == CARIAGE_RETURN){return 0;}
   else if(letter){return pgm_read_byte(&numberParody[letter-'`']);}
   return 0;
 }

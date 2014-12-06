@@ -99,16 +99,16 @@ void feedbackAndRelease()
   static boolean held = false;
   
   int currentState = buttonState(MONITOR_BUTTONS);
-  if(patternToChar(currentState))
+  if( held && currentState == 0 ) //at the moment of a release
   {
-    patternVibrate(currentState);
-    held = true;
-  }
-  else if( held && vibInactive() )
-  {
-    patternVibrate(0);
+    if(vibInactive()){patternVibrate(0);}
     releaseKey();
     held = false;
+  }
+  else if(patternToChar(currentState))
+  { // if that state is a pattern 
+    patternVibrate(currentState);
+    held = true;
   }
 }
 

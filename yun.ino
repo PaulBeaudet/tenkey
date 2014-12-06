@@ -19,7 +19,7 @@ void keyOut(byte keyPress)
   static boolean terminalMode = false;
   if(keyPress == 't' + SPACEBAR){terminalMode = !terminalMode; return;}
 
-  if(keyPress < FUNC_F1){Keyboard.write(keyboardSpecial(keyPress));} 
+  if(keyPress < FUNC_F1){Keyboard.write(keyboardSpecial(keyPress));}
   else {Keyboard.write(keyPress);}
   if(keyPress == CARIAGE_RETURN){keyPress = NEW_LINE;}//linux return call
   if(terminalMode){Serial1.write(keyPress);}
@@ -40,7 +40,6 @@ void comboPress(byte modifiers, byte key1, byte key2)
   }
   if(key1){Keyboard.press(key1);}
   if(key2){Keyboard.press(key2);}
-  Keyboard.releaseAll();
 }
 
 //---------- YUN specific --------------
