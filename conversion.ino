@@ -65,15 +65,15 @@ byte patternToChar(int base) //returns the char value of a raw chord
 
 byte heldASCII(byte letter)
 {
-  static byte holdTimes = 0;
+  static unsigned long holdTimes = 0;
   
   if(letter){holdTimes++;}
   else{holdTimes = 0;}
   
   if(letter == SPACEBAR)
   {
-    if(holdTimes == 5){return BACKSPACE;}
-    if(holdTimes == 6){return 138;}// 'j' plus SPACEBAR
+    if(holdTimes == 30){return BACKSPACE;}
+    if(holdTimes == 31){return 138;}// 'j' plus SPACEBAR
     return 0;
   }
   if(letter == TAB_KEY)
@@ -81,21 +81,21 @@ byte heldASCII(byte letter)
     return 0;
   }
   
-  if(holdTimes == 3 && letter > 95){return BACKSPACE;}
-  if(holdTimes == 4)// first hold
+  if(holdTimes == 18 && letter > 95){return BACKSPACE;}
+  if(holdTimes == 19)// first hold
   {//letters covered by main layout
     if(letter > 95){return letter-SPACEBAR;} //shift cases
     if(letter == '1'){return 0;} //empty cases return 0 
     return letter; //outside cases are repeating
   }
-  if(holdTimes == 7 && letter > 95){return BACKSPACE;}
-  if(holdTimes == 8) //second hold 
+  if(holdTimes == 42 && letter > 95){return BACKSPACE;}
+  if(holdTimes == 43) //second hold 
   {//letters covered by main layout
     if(letter > 95){return letter+SPACEBAR;} //macro cases 
     if(letter == '1'){return 129;} 
     return letter; //outside cases are repeating
   }
-  if(holdTimes > 8)
+  if(holdTimes > 43)
   {//outside main layout letters repeat
     if(letter < 95 && letter != '1' ){return letter;}
   }

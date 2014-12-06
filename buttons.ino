@@ -1,6 +1,6 @@
 //button.ino -- copyright(c)2014 Paul Beaudet, see licence for details
 #define BOUNCETIME 5//ms  /wait this long to be sure of a legit press
-#define HOLDSTATE 60//ms /wait this long for a hold cycle
+#define HOLDSTATE 10//ms /wait this long for a hold cycle
 #define DOUBLETIME 210// GO! BILLY BANKS STYLE!
 #define TRIGRAMTIME  40 //time it takes for a three letter chord to recognize
 #define BIGRAMTIME   50 //weee snaw!
