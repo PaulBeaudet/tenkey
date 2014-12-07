@@ -4,10 +4,11 @@
 * This program is free open source software: See licenses.txt to understand 
   reuse rights of any file associated with this project
 ********* See readme.md for hardware discription **************/
-#include <Wire.h>          // i2c 
+#include <Wire.h>          // i2c
+#include <EEPROM.h>
 #include "keyDefinitions.h" //define key numbers for various output types
 //switch board named file with your board found in "hardwareOptions" folder
-//eg -> yun.ino <-with-> hardwareOptions/uno.ino (if )
+//eg -> yun.ino <-with-> hardwareOptions/uno.ino
 
 #define MONITOR_BUTTONS 33 // signal to monitor buttons
 #define MONITOR_MODE   0 // goto default behavior for multi-mode functions
@@ -24,6 +25,7 @@ void setup()//setup the needed hardware
   pagersUp();          // hardware.ino: brings vibrating motor interface up
   buttonUp();          // hardware.ino: brings button polling intreface up
   serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
+  EEPROMsetup();
 }
 
 void loop() 
@@ -34,6 +36,7 @@ void loop()
   messageHandlr(MONITOR_MODE);//handles incoming messages
   listenForMessage();// grab potential messages over usb serial
   potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
+  mouseMovement();
   //Yun specific
   serialBowl(MONITOR_MODE); // check: terminal responses
 }
@@ -50,7 +53,7 @@ byte mainIOroutine()
       keyOut(pressState);      //actuate the press as a keystroke
       messageHandlr(TRIGGER);  //letters interupt messages
     } 
-    else if(pressState > 159){keyOut(pressState);}//special cases like arrows
+    else if(pressState > 159){mouseClick(pressState);}//special cases
     else{macros(pressState);} //in all other cases check for macros
   }//macros are exempt from interupting messageHandlr
   return pressState;
@@ -60,7 +63,7 @@ byte mainIOroutine()
 byte chordLoop()
 {
   static byte doubleActuation;
-  
+
   byte actuation = 0;
   if(doubleActuation)
   {
@@ -97,12 +100,13 @@ byte chordLoop()
 void feedbackAndRelease()
 {
   static boolean held = false;
-  
+
   int currentState = buttonState(MONITOR_BUTTONS);
   if( held && currentState == 0 ) //at the moment of a release
   {
     if(vibInactive()){patternVibrate(0);}
     releaseKey();
+    mouseRelease(); //he wants to be free!
     held = false;
   }
   else if(patternToChar(currentState))

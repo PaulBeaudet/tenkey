@@ -42,6 +42,78 @@ void comboPress(byte modifiers, byte key1, byte key2)
   if(key2){Keyboard.press(key2);}
 }
 
+//mousey stuff
+void mouseClick(byte click)
+{
+  if(click == LEFT_CLICK_IN){Mouse.press(LEFT_CLICK_OUT);}
+  if(click == RIGHT_CLICK_IN){Mouse.press(RIGHT_CLICK_OUT);}
+}
+
+void mouseRelease()//be free critter!
+{
+  Mouse.release(LEFT_CLICK_OUT);
+  Mouse.release(RIGHT_CLICK_OUT);
+  Mouse.release(MIDDLE_CLICK_OUT);
+}
+
+#define REFRESH_TIME 30 //poll rate of pins
+#define X_AXIS A2        //analog pin used for x
+#define Y_AXIS A3        //analog pin used for y
+#define RANGE 12
+
+//EEPROM data locations
+#define XMIN 0
+#define XMAX 2
+#define YMIN 4
+#define YMAX 6 //was a load of crap
+#define SESSION_REC 8
+#define SESSION_KEY 66
+void writeReading(int data, byte location)
+{
+  EEPROM.write(location, highByte(data));
+  EEPROM.write(location + 1, lowByte(data));
+}
+
+void EEPROMsetup()
+{
+  if(EEPROM.read(SESSION_REC) == SESSION_KEY)
+  {
+    writeReading(512, XMIN);
+    writeReading(512, XMAX);
+    writeReading(512, YMIN);
+    writeReading(512, YMAX);
+    EEPROM.write(SESSION_REC, SESSION_KEY);//notify intial calibration has occured
+  }
+}
+void mouseMovement()
+{
+  static unsigned long time = 0;
+  
+  if(millis() - time > REFRESH_TIME)
+  {//EEPROM the calibration data so it is centered every boot
+    int xReading = analogRead(X_AXIS);
+    int yReading = analogRead(Y_AXIS);
+    int xmin = word(EEPROM.read(XMIN),EEPROM.read(XMIN +1));
+    int xmax = word(EEPROM.read(XMAX),EEPROM.read(XMAX +1));
+    int ymin = word(EEPROM.read(YMIN),EEPROM.read(YMIN +1));
+    int ymax = word(EEPROM.read(YMAX),EEPROM.read(YMAX +1));
+    
+    if(xReading < xmin){writeReading(xReading, XMIN);} //4 directions of 
+    else if(xReading > xmax){writeReading(xReading, XMAX);} //Calibration
+    else if(yReading < ymin){writeReading(yReading, YMIN);}
+    else if(yReading > ymax){writeReading(yReading, YMAX);}
+    else //outside of calibration cases 
+    {
+      char xMapped = map(xReading, xmin, xmax, RANGE, -RANGE);
+      char yMapped = map(yReading, ymin, ymax, -RANGE, RANGE);
+      if(abs(yMapped) != 1 && yMapped != 0 && abs(yMapped) != 2)
+      {Mouse.move(0,yMapped,0);}
+      if(abs(xMapped) != 1 && xMapped != 0 && abs(xMapped) != 2)
+      {Mouse.move(xMapped,0,0);}
+    }
+    time = millis();
+  }
+}
 //---------- YUN specific --------------
 void bridgeShutdown()
 {

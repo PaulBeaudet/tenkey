@@ -28,6 +28,18 @@
 #define KB_ESC         177
 #define KB_CAPS_LOCK   193
 
+//control char Bluefruit presses  NOT USED 
+#define BT_LEFT_CTRL      224
+#define BT_LEFT_SHIFT     225
+#define BT_LEFT_ALT       226
+#define BT_LEFT_GUI       227
+#define BT_RIGHT_CTRL     228
+#define BT_RIGHT_SHIFT    229
+#define BT_RIGHT_ALT      230
+#define BT_RIGHT_GUI      231
+
+//keycodes as understood by bluefruit and keyWriter
+//These get passed around as the actual representations in tenkey codebase
 #define INSERT         1
 #define HOME           2
 #define PAGE_UP        3
@@ -61,16 +73,18 @@
 #define NUM_LOCK       31
 #define SPACEBAR       32
 
-//control char Bluefruit presses  NOT USED 
-#define BT_LEFT_CTRL      224
-#define BT_LEFT_SHIFT     225
-#define BT_LEFT_ALT       226
-#define BT_LEFT_GUI       227
-#define BT_RIGHT_CTRL     228
-#define BT_RIGHT_SHIFT    229
-#define BT_RIGHT_ALT      230
-#define BT_RIGHT_GUI      231
-// Mask these are the used 
+// 33 through 127 are covered by printable characters
+// 128 through 159 are covered by marcro modes
+// 160 through 192
+// mouse reports - both BT and USB use masked 1-2-4 convention
+#define LEFT_CLICK_IN    160
+#define RIGHT_CLICK_IN   162
+#define MIDDLE_CLICK_IN  163
+#define LEFT_CLICK_OUT   1
+#define RIGHT_CLICK_OUT  2
+#define MIDDLE_CLICK_OUT 4
+
+// These are piped/ored|together to pass a modifier argument
 #define LEFT_CTRL   1   //0 #define KB_LEFT_CTRL   128
 #define LEFT_SHIFT  2   //1 #define KB_LEFT_SHIFT  129
 #define LEFT_ALT    4   //2 #define KB_LEFT_ALT    130

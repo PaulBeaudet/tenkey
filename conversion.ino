@@ -42,6 +42,8 @@ boolean convertionMode(boolean toggle) //toggles numbers or letters mode
 #define R_THUMB 512  // int value of key data
 byte patternToChar(int base) //returns the char value of a raw chord
 {// some convertions can explicitly imediately be returned 
+  if(base == 240){return LEFT_CLICK_IN;}
+  if(base == 15){return RIGHT_CLICK_IN;}
   if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars
   if(base == R_THUMB){return SPACEBAR;}//also doubles: first shift in a chord
   if(base == 102){return 0;} //number otherwise assigned to del possition
