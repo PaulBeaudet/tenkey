@@ -56,7 +56,7 @@ void mouseRelease()//be free critter!
   Mouse.release(MIDDLE_CLICK_OUT);
 }
 
-#define REFRESH_TIME 30 //poll rate of pins
+#define REFRESH_TIME 20 //poll rate of pins
 #define X_AXIS A2        //analog pin used for x
 #define Y_AXIS A3        //analog pin used for y
 #define RANGE 12
@@ -106,9 +106,9 @@ void mouseMovement()
     {
       char xMapped = map(xReading, xmin, xmax, RANGE, -RANGE);
       char yMapped = map(yReading, ymin, ymax, -RANGE, RANGE);
-      if(abs(yMapped) != 1 && yMapped != 0 && abs(yMapped) != 2)
+      if(abs(yMapped) != 1 && yMapped != 0 && abs(yMapped) != 2 && abs(yMapped) != 3)
       {Mouse.move(0,yMapped,0);}
-      if(abs(xMapped) != 1 && xMapped != 0 && abs(xMapped) != 2)
+      if(abs(xMapped) != 1 && xMapped != 0 && abs(xMapped) != 2 && abs(xMapped) != 3)
       {Mouse.move(xMapped,0,0);}
     }
     time = millis();
