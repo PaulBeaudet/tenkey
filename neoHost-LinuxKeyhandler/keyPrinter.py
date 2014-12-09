@@ -3,7 +3,7 @@
 #    Serial Reader for ARDUINO
 #    usefull when tail -f /dev/ttyXXXX doesn't work
 #    Change ttyACM0 for your own tty interface
-import serial, time, sys, subprocess
+import serial, time, subprocess
 
 # The second argument is the baudrate,
 # change according to the baudrate you gave to your Serial.begin command
@@ -14,14 +14,19 @@ port0.setDTR(True)
 time.sleep(1)
 port0.setDTR(False)
 
-# give and option to select serialport
+#output function
+def keyOut(letter):
+    if letter >= ' ':
+        ps = subprocess.call(['xdotool','key',letter])
 
-#port0.write("hey")#say hello to the arduino
-while port0.isOpen:
-	letter = port0.read()
-	if letter > 31 and letter < 127:
-		ps = subprocess.Popen('xdotool','key',letter)
-    #if raw_input() == 'q': #given quit argument exit program
-        #sys.exit()
-# if loop has broken this means port closed
-print "closed" #cry foul
+#Main loop
+while True:
+    if port0.inWaiting() > 0:
+        try:
+            keyOut(port0.read())
+        except Exception, e:
+            print "marbles lost! ", e
+            continue
+
+#still getting an error, the python is also taking up a lot of process cycles doing all of this. 
+#device reports readiness to read but returned no data (device disconnected or multiple access on port?)
