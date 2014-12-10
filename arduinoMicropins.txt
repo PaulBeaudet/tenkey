@@ -180,11 +180,4 @@ s   h
   w h                               -> "c"
 s w
     h t
-s     t  
-
-*******getting the most common first words notes********
---7 bit combos to get the top 50--
-thebofa -result-> 10
-watches -result-> 10
-another -result-> 
-  
+s     t
