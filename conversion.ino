@@ -213,7 +213,14 @@ const byte SpecialToKBD[] PROGMEM =
   0,209,210,211,212,213,214,215,8,9,176,216,217,176,218,
 };
 
-byte keyboardSpecial(byte letter)
+byte keyboardConvert(byte letter)
 {
-  return pgm_read_byte(&SpecialToKBD[letter]);
+  if(letter < FUNC_F1){return pgm_read_byte(&SpecialToKBD[letter]);}
+  return letter;//pass typical cases through
+}
+
+char ttlConvert(byte letter) //also converts to proper char data type
+{
+  if(letter == CARIAGE_RETURN){return NEW_LINE;}
+  return letter;//pass typical cases through
 }

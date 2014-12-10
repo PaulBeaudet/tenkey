@@ -17,13 +17,14 @@ void serialInterfaceUp()
 void keyOut(byte keyPress)
 {
   static boolean terminalMode = false;
+  static boolean keyboardMode = true; //default output mode
   if(keyPress == 't' + SPACEBAR){terminalMode = !terminalMode; return;}
+  if(keyPress == 'k' + SPACEBAR){keyboardMode = !keyboardMode; return;}
 
-  if(keyPress < FUNC_F1){Keyboard.write(keyboardSpecial(keyPress));}
-  else {Keyboard.write(keyPress);}
-  if(keyPress == CARIAGE_RETURN){keyPress = NEW_LINE;}//linux return call
-  if(terminalMode){Serial1.write(keyPress);}
-  //Serial.write(keyPress); // bluefruit or the uno or conection with pyserial
+  if(keyboardMode){Keyboard.write(keyboardConvert(keyPress));} //defualt op
+  else{Serial.write(ttlConvert(keyPress));} //conection via pyserial or debug
+
+  if(terminalMode){Serial1.write(ttlConvert(keyPress));}//Yun communication
 }
 
 void releaseKey()
@@ -82,7 +83,7 @@ void EEPROMsetup()
     writeReading(512, XMAX);
     writeReading(512, YMIN);
     writeReading(512, YMAX);
-    EEPROM.write(SESSION_REC, SESSION_KEY);//notify intial calibration has occured
+    EEPROM.write(SESSION_REC, SESSION_KEY);//notify intial calibration occured
   }
 }
 void mouseMovement()
