@@ -18,8 +18,8 @@ void keyOut(byte keyPress)
 {
   static boolean terminalMode = false;
   static boolean keyboardMode = true; //default output mode
-  if(keyPress == 't' + SPACEBAR){terminalMode = !terminalMode; return;}
-  if(keyPress == 'k' + SPACEBAR){keyboardMode = !keyboardMode; return;}
+  if(keyPress == 148){terminalMode = !terminalMode; return;}//t macro
+  if(keyPress == 139){keyboardMode = !keyboardMode; return;}//k macro
 
   if(keyboardMode){Keyboard.write(keyboardConvert(keyPress));} //defualt op
   else{Serial.write(ttlConvert(keyPress));} //conection via pyserial or debug
@@ -57,10 +57,10 @@ void mouseRelease()//be free critter!
   Mouse.release(MIDDLE_CLICK_OUT);
 }
 
-#define REFRESH_TIME 20 //poll rate of pins
+#define REFRESH_TIME 21 //poll rate of pins
 #define X_AXIS A2        //analog pin used for x
 #define Y_AXIS A3        //analog pin used for y
-#define RANGE 12
+#define RANGE 8
 
 //EEPROM data locations
 #define XMIN 0
@@ -68,7 +68,7 @@ void mouseRelease()//be free critter!
 #define YMIN 4
 #define YMAX 6 //was a load of crap
 #define SESSION_REC 8
-#define SESSION_KEY 66
+#define SESSION_KEY 61
 void writeReading(int data, byte location)
 {
   EEPROM.write(location, highByte(data));
@@ -77,7 +77,7 @@ void writeReading(int data, byte location)
 
 void EEPROMsetup()
 {
-  if(EEPROM.read(SESSION_REC) == SESSION_KEY)
+  if(EEPROM.read(SESSION_REC) != SESSION_KEY)
   {
     writeReading(512, XMIN);
     writeReading(512, XMAX);
