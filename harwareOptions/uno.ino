@@ -7,8 +7,7 @@ void serialInterfaceUp()
 //-------------Writing keys to host----------
 void keyOut(byte keyPress)
 {
-  if(keyPress == CARIAGE_RETURN){keyPress = NEW_LINE;}//linux return call
-  Serial.write(keyPress); // bluefruit or the uno or conection with pyserial
+  Serial.write(ttlConvert(keyPress)); //bluefruit or conection with pyserial
 }
 
 void comboPress(byte modifiers, byte key1, byte key2)
