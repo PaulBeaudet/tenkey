@@ -145,32 +145,6 @@ byte getFrame(byte frame, byte type = 0)
   else {return pgm_read_byte(&frameStore[frame]);}
 }
 
-// ------- contextual --------------
-const byte homeRow[] PROGMEM = {'a','n','o','t','h','e','r','s',SPACEBAR,};
-
-boolean isHomerow(byte letter)
-{// returns true for letters in the homerow
-  for(byte i = 0; i < 9; i++)
-  {if (letter == pgm_read_byte(&homeRow[i])){return true;}}
-  return false;
-}
-
-boolean isNumRow(byte letter) // numbers on the howrow
-{ // returns turn for numbers that are on the homerow
-  for(byte i=1; i<9; i++){if(letter == i + 48){return true;}}
-  return false;
-}
-
-boolean isRepeating(byte letter)
-{ // return true for repeating actions
-  if(letter == BACKSPACE){return true;}
-  if(letter == RIGHT_ARROW){return true;}
-  if(letter == LEFT_ARROW){return true;}
-  if(letter == UP_ARROW){return true;}
-  if(letter == DOWN_ARROW){return true;}
-  return false;
-}
-
 // ----------------- Key presses --------------
 const byte BlueConvert[] PROGMEM =
 {// on the ASCII table start from space and go to tilde
