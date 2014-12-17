@@ -4,50 +4,48 @@
 * This program is free open source software: See licenses.txt to understand 
   reuse rights of any file associated with this project
 ********* See readme.md for hardware discription **************/
-#include <Wire.h>          // i2c
-#include <EEPROM.h>
+#include <Wire.h>           //i2c
+#include <EEPROM.h>         //store mouse calibration
 #include "keyDefinitions.h" //define key numbers for various output types
 //switch board named file with your board found in "hardwareOptions" folder
 //eg -> yun.ino <-with-> hardwareOptions/uno.ino
 
-#define MONITOR_BUTTONS 33 // signal to monitor buttons
-#define MONITOR_MODE   0 // goto default behavior for multi-mode functions
-#define TRIGGER        1 // set enter key to press : enterBehavior()
-#define DEFAULT_MODE   1 // outputFilter: regular letters, potentiometer check
-#define NUMBERS_MODE   2 // outputFilter: Numbers
-#define RECORD_CAT     2 // enterBehavior() cat or record or record cat
-#define ADJUST_PWM     2 // potentiometer()
-#define ADJUST_TIMING  3 // potentiometer()
-#define LINE_SIZE      80   //cause why should a line be longer?
+#define MONITOR_BUTTONS 33 //signal to monitor buttons
+#define MONITOR_MODE   0   //goto default behavior for multi-mode functions
+#define TRIGGER        1   //set enter key to press : enterBehavior()
+#define DEFAULT_MODE   1   //potentiometer check
+#define NUMBERS_MODE   2   //outputFilter: Numbers
+#define RECORD_CAT     2   //cat or record or record cat
+#define ADJUST_PWM     2   //potentiometer()
+#define ADJUST_TIMING  3   //potentiometer()
+#define LINE_SIZE      80  //cause why should a line be longer?
 
 void setup()//setup the needed hardware  
 {
-  pagersUp();          // hardware.ino: brings vibrating motor interface up
-  buttonUp();          // hardware.ino: brings button polling intreface up
-  serialInterfaceUp(); // hardware.ino: brings serial output interface/s up
-  EEPROMsetup();
+  pagersUp();          //pagers.ino: brings vibrating motor interface up
+  buttonUp();          //buttons.ino: brings button polling intreface up
+  serialInterfaceUp(); //yun/uno/leo.ino: brings serial output interface/s up
+  EEPROMsetup();       //yun/uno/leo.ino: manages first calibration session
 }
 
 void loop() 
 {
-  mainIOroutine(); //handles key input and output
-  //EXTRA FEATURES
-  feedbackAndRelease();//controls pager feedback and release control
+  mainIOroutine();            //handles key input and output
+  feedbackAndRelease();       //controls pager feedback and release control
   messageHandlr(MONITOR_MODE);//handles incoming messages
-  listenForMessage();// grab potential messages over usb serial
+  listenForMessage();         //grab potential messages over usb serial
   potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
-  mouseMovement();
-  //Yun specific
-  serialBowl(MONITOR_MODE); // check: terminal responses
+  mouseMovement();            //monitor joystick for mouse actions
+  serialBowl(MONITOR_MODE);   //check: terminal responses
 }
-//-- main IO flow control
+
+//---- main chord interpertation flow control ----
 byte mainIOroutine()
 {
-  byte pressState = chordLoop();//<--important part
-  // captures the current state of the buttons
+  byte pressState = chordLoop(); //captures the current state of the buttons
   if(pressState)
   {   
-    if (pressState < 128)//reduces to letters
+    if (pressState < 128)      //narrows values to letters
     {
       recordHandlr(pressState);//records presses to messageHandlr given active
       keyOut(pressState);      //actuate the press as a keystroke
@@ -59,21 +57,20 @@ byte mainIOroutine()
   return pressState;
 }
 
-//-- main chord interpertation flow control
 byte chordLoop()
 {
-  static byte doubleActuation;
+  static byte doubleActuation = 0;
 
-  byte actuation = 0;
-  if(doubleActuation)
-  {
+  byte actuation = 0;            //establish var that will be returned
+  if(doubleActuation)            //backspace needed to be sent last iteration
+  {                              //double actuation holds the intended char
     actuation = doubleActuation;
     doubleActuation = 0;
     return actuation;
   }
   
-  buttonUpdate();//updates internal button state
-  int chord = trueChord(MONITOR_MODE);
+  buttonUpdate();                      //updates internal button state
+  int chord = trueChord(MONITOR_MODE); //monitor chord posibilities
   byte pressState = patternToChar(chord);
   byte hold = 0;
   if(doubleActuation = doubleToASCII(doubleEvent(pressState)))
@@ -86,17 +83,16 @@ byte chordLoop()
     actuation = pressState;
     hold = pressState;
   }
-  
   byte varifiedHold = 0;
-  hold = holdHandlr(hold);//check if there was a hold
-  if(hold){varifiedHold = heldASCII(hold);}//only feed in hold events
+  hold = holdHandlr(hold);                  //check if there was a hold
+  if(hold){varifiedHold = heldASCII(hold);} //only feed in hold events
   else if(!buttonState(MONITOR_BUTTONS)){heldASCII(0);}//feed in release cases
 
   if(varifiedHold){actuation = varifiedHold;}
   return actuation;
 }
 
-//-- feedback & state handling
+//---- feedback & state handling ----
 void feedbackAndRelease()
 {
   static boolean held = false;
@@ -123,7 +119,7 @@ boolean vibInactive() //check other function controling vibrators
   return true; // as long as everything is inactive return true
 }
 
-//-- Special macro functions 
+//---- Special macro functions ----
 void macros(byte letter)
 {
   if     (letter == 'a' + SPACEBAR){convertionMode(TRIGGER);}//toggle numbers
