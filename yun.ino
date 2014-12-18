@@ -174,8 +174,9 @@ boolean serialBowl(boolean terminalToggle)
   if(terminalMode)
   {
     if(!letterInWaiting){letterInWaiting = Serial1.read();}
-    if(letterInWaiting == 255){printing = false; letterInWaiting = 0;}
-    else if(hapticMessage(MONITOR_MODE))   //letter played or boot has occurred
+    if(letterInWaiting == 255){letterInWaiting = 0;}
+
+    if(hapticMessage(MONITOR_MODE))   //letter played or boot has occurred
     {
       if(letterInWaiting)
       {
@@ -184,8 +185,10 @@ boolean serialBowl(boolean terminalToggle)
         Keyboard.write(letterInWaiting);      //show user char via Keyboard
         letterInWaiting = 0;
       }
+      else{printing = false;}
     }
   }
+  else{printing = false;}
   //turning ASH on and off, in order to keep up with output
   if(Serial1.available() > 3){Serial1.write(XOFF);}
   else{Serial1.write(XON);} //resume output of ash
