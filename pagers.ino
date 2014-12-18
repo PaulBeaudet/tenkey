@@ -48,7 +48,7 @@ boolean ptimeCheck(uint32_t durration)
 boolean hapticMessage(byte letter, int spacing = 0) 
 { // updating function; passing a string sets course of action
   static boolean animated = false; // animated or typical letter?
-  static int timing = 250; //default timing
+  static int timing = 150; //default timing
   
   if(spacing){timing = spacing; return false;}//change timing call
   
@@ -62,7 +62,7 @@ boolean hapticMessage(byte letter, int spacing = 0)
     }
     else if(byte validAnimation = getFrame(0, letter))
     {//if 0 frame is availible for this letter
-      int adjustedTime = timing / 2 + timing;
+      int adjustedTime = timing / 8 + timing;
       ptimeCheck(adjustedTime/NUMPAGERS); // a fraction of alotted time
       patternVibrate(validAnimation);
       animated = true;
@@ -89,7 +89,7 @@ boolean typicalLetter(int timing)
     {
       touchPause=!touchPause;    //flag pause time to start
       patternVibrate(0);         //stop letter feedback
-      ptimeCheck(timing/2);//set pause time
+      ptimeCheck(timing/8);//set pause time
     };
   }
   return false;  //signals letter in process of being played
@@ -109,7 +109,7 @@ boolean animatedProcess(int timing)
       return true;   // animation complete
     }
     patternVibrate(getFrame(frame)); //start to play frame
-    int adjustedTime = timing / 2 + timing;
+    int adjustedTime = timing / 8 + timing;
     ptimeCheck(adjustedTime/NUMPAGERS);    //devides frame increments
   }
   return false;
@@ -258,7 +258,7 @@ void potentiometer(byte mode)
   else if (mode == PWM_ADJUST)
   {pagerIntensity(map(potValue, 0, 1023, 0, 4095));}
   else if (mode == TIMING_ADJUST)
-  {hapticMessage(0, map(potValue, 0, 1023, 100, 2000));}
+  {hapticMessage(0, map(potValue, 0, 1023, 10, 500));}
 }
 
 void potReturn(int potValue)
