@@ -167,6 +167,15 @@ boolean serialBowl(boolean terminalToggle)
 
   if(terminalToggle)
   {
+    if(terminalMode)//if terminal was on, dump whatever task was on hand
+    {
+      Serial1.write(XON);
+      while(Serial1.available() > 0)
+      {
+        Serial1.read();
+        delayMicroseconds(250);
+      }
+    }
     terminalMode = !terminalMode;
     keyOut('t' + SPACEBAR); // also toggle terminal mode in keyOut routine
   }
