@@ -15,6 +15,7 @@
 #define TRIGGER        1   //set enter key to press : enterBehavior()
 #define DEFAULT_MODE   1   //potentiometer check
 #define NUMBERS_MODE   2   //outputFilter: Numbers
+#define MONITOR_PAGERS 2   //check pagerActivity();
 #define RECORD_CAT     2   //cat or record or record cat
 #define ADJUST_PWM     2   //potentiometer()
 #define ADJUST_TIMING  3   //potentiometer()
@@ -107,7 +108,7 @@ void feedbackAndRelease()
   }
   else if(patternToChar(currentState))
   { // if that state is a pattern 
-    patternVibrate(currentState);
+    if(pagerActivity(MONITOR_PAGERS) == false){patternVibrate(currentState);}
     held = true;
   }
 }
@@ -116,6 +117,7 @@ boolean vibInactive() //check other function controling vibrators
 { //extended AND opperation for readability
   if(serialBowl(MONITOR_MODE)){return false;} //if terminal mode is printing
   if(messageHandlr(MONITOR_MODE)){return false;} //if message mode is printing
+  if(pagerActivity(MONITOR_PAGERS)){return false;}
   return true; // as long as everything is inactive return true
 }
 
@@ -128,6 +130,7 @@ void macros(byte letter)
     if(recordHandlr(MONITOR_MODE)){;}
     else{messageHandlr(RECORD_CAT);}
   }
+  else if(letter == 'g' + SPACEBAR){typingPractice();}//turn on practice
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
   else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);}//Toggle to pwm
   else if(letter == 'j' + SPACEBAR){comboPress(LEFT_ALT,0,0);}

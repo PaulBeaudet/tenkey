@@ -45,6 +45,14 @@ boolean ptimeCheck(uint32_t durration)
   return false;                   //time has yet to pass
 }
 
+boolean pagerActivity(byte activityMode)
+{
+  static boolean activityReading = false;
+  
+  if(activityMode == 2){return activityReading;}
+  else{activityReading = activityMode;}
+}
+
 boolean hapticMessage(byte letter, int spacing = 0) 
 { // updating function; passing a string sets course of action
   static boolean animated = false; // animated or typical letter?

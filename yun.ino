@@ -17,14 +17,18 @@ void serialInterfaceUp()
 void keyOut(byte keyPress)
 {
   static boolean terminalMode = false;
+  static boolean practiceMode = false;
   static boolean keyboardMode = true; //default output mode
   if(keyPress == 148){terminalMode = !terminalMode; return;}//t macro
   if(keyPress == 139){keyboardMode = !keyboardMode; return;}//k macro
+  if(keyPress == 'g' + SPACEBAR){practiceMode = !practiceMode; return;}
+  
 
   if(keyboardMode){Keyboard.write(keyboardConvert(keyPress));} //defualt op
   else{Serial.write(ttlConvert(keyPress));} //conection via pyserial or debug
 
   if(terminalMode){Serial1.write(ttlConvert(keyPress));}//Yun communication
+  else if(practiceMode){practicePrompt(keyPress);}
 }
 
 void releaseKey()
@@ -107,7 +111,7 @@ void mouseMovement()
     {
       char xMapped = map(xReading, xmin, xmax, RANGE, -RANGE);
       char yMapped = map(yReading, ymin, ymax, -RANGE, RANGE);
-      if(abs(yMapped) != 1 && yMapped != 0 && abs(yMapped) != 2 && abs(yMapped) != 3)
+      if(abs(yMapped) != 1 && yMapped != 0 && abs(yMapped) != 2 && abs(yMapped) != 3)//if(abs(yMapped)>3){dostuff}
       {Mouse.move(0,yMapped,0);}
       if(abs(xMapped) != 1 && xMapped != 0 && abs(xMapped) != 2 && abs(xMapped) != 3)
       {Mouse.move(xMapped,0,0);}
@@ -159,6 +163,32 @@ boolean bootCheck()
 
 #define XON            17 // control_Q resume terminal output
 #define XOFF           19 // control_S stop terminal output
+void bowlControl()
+{//turning ASH on and off, in order to keep up with output
+  if(Serial1.available() > 3){Serial1.write(XOFF);}
+  else{Serial1.write(XON);} //resume output of ash 
+}
+
+void dumpThis(byte numberBytes)
+{
+  for(numberBytes; numberBytes == 0; numberBytes--)
+  {
+    Serial.write(Serial1.read());
+    //delayMicroseconds(250);
+    bowlControl();
+  }
+}
+
+void serialDump() //dump whatever task was at hand
+{
+  Serial1.write(XON);
+  while(Serial1.available() > 0)
+  {
+    Serial.write(Serial1.read());
+    //delayMicroseconds(250);
+  }
+}
+
 boolean serialBowl(boolean terminalToggle)
 { // keep the alphabits from overflowing
   static boolean terminalMode = false;
@@ -167,15 +197,7 @@ boolean serialBowl(boolean terminalToggle)
 
   if(terminalToggle)
   {
-    if(terminalMode)//if terminal was on, dump whatever task was on hand
-    {
-      Serial1.write(XON);
-      while(Serial1.available() > 0)
-      {
-        Serial1.read();
-        delayMicroseconds(250);
-      }
-    }
+    if(terminalMode){serialDump();}
     terminalMode = !terminalMode;
     keyOut('t' + SPACEBAR); // also toggle terminal mode in keyOut routine
   }
@@ -198,8 +220,53 @@ boolean serialBowl(boolean terminalToggle)
     }
   }
   else{printing = false;}
-  //turning ASH on and off, in order to keep up with output
-  if(Serial1.available() > 3){Serial1.write(XOFF);}
-  else{Serial1.write(XON);} //resume output of ash
+  bowlControl(); //part that keeps the serial in the bowl
   return printing;
+}
+
+void practiceWord()
+{
+
+}
+
+void practicePrompt(byte atemptedLetter)
+{
+  static byte letterInWaiting = 0;
+  
+  if(atemptedLetter == 0xff){letterInWaiting = 0;}
+  else if(atemptedLetter == letterInWaiting)
+  {
+    delayMicroseconds(250);
+    letterInWaiting = Serial1.read();
+    bowlControl();
+    if(letterInWaiting == 0xff){typingPractice();}
+    else if(letterInWaiting == SPACEBAR){patternVibrate(240);}
+    else if(letterInWaiting < 'A'){practicePrompt(letterInWaiting);} 
+    else if(byte valid = charToPattern(letterInWaiting)){patternVibrate(valid);}
+    else{practicePrompt(letterInWaiting);}
+  }
+}
+
+void typingPractice()
+{
+  static boolean practiceMode = false;
+  
+  serialDump();           //remove and existing cruft
+  if(practiceMode)        //exiting practice mode case
+  {
+    pagerActivity(0);     //set pager blocking inactive
+    practicePrompt(0xff); //turn prompt off
+  }
+  else                    //entering practice mode case
+  {
+    pagerActivity(TRIGGER);
+    Serial1.print("cat /mnt/sda1/arduino/alice.txt");
+    serialDump();
+    Serial1.write(NEW_LINE);
+    practicePrompt(0); //call for first prompt
+    //Serial1.write(XOFF);
+    //dumpThis(31); //number of bytes that will be returned?
+  }
+  practiceMode = !practiceMode;
+  keyOut('g' + SPACEBAR);
 }
