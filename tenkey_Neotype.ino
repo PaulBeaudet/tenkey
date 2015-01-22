@@ -81,6 +81,7 @@ byte chordLoop()
   }
   else if(pressState)
   {
+    pressTime(pressState); //begin to record time pressed
     actuation = pressState;
     hold = pressState;
   }
@@ -96,8 +97,8 @@ byte chordLoop()
 //---- feedback & state handling ----
 void feedbackAndRelease()
 {
-  static boolean held = false;
-
+  static boolean held = false; 
+  //general press hold, for holdstates see conversions.ino -> heldASCII()
   int currentState = buttonState(MONITOR_BUTTONS);
   if( held && currentState == 0 ) //at the moment of a release
   {
@@ -105,6 +106,7 @@ void feedbackAndRelease()
     releaseKey();
     mouseRelease(); //he wants to be free!
     held = false;
+    pressTime(0); //print press durration
   }
   else if(patternToChar(currentState))
   { // if that state is a pattern 

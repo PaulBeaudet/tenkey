@@ -270,3 +270,25 @@ void typingPractice()
   practiceMode = !practiceMode;
   keyOut('g' + SPACEBAR);
 }
+
+
+//--------- Performance testing functions ---------------
+
+void pressTime(byte trigger)
+{
+  static unsigned long durration = 0;
+  static byte letter = 0;
+  
+  if(trigger)
+  {
+    durration = millis();
+    letter = trigger;
+  }
+  else
+  {
+    Serial.write(letter);
+    Serial.print(F(" -pressed- "));
+    Serial.println(millis() - durration);
+    durration = 0;
+  }
+}
