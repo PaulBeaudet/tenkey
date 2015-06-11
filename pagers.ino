@@ -1,5 +1,6 @@
 //hardware.ino  Copyright Paul Beaudet 2014 See license for reuse info
 //depends on wire and Adafruit_PWM
+//Uses pins A4 and A5 or expantion pins on leo
 //---------------- Haptics / Pagers / Vib motors -----------------
 #include "Adafruit_PWM.h" // see readme for harware notes
 #define NUMPAGERS 8 // can use up to 16
@@ -9,7 +10,7 @@ Adafruit_PWM pagers = Adafruit_PWM();// create pagers object
 void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
 {               // might not work when sharing the I2C bus
   pagers.begin();
-  pagers.setPWMFreq(1600);  // This is the maximum PWM frequency
+  pagers.setPWMFreq(1600);  // 1600 is the maximum PWM frequency
   uint8_t twbrbackup = TWBR;// save I2C bitrate
   // must be changed after calling Wire.begin() (inside pwm.begin())
   TWBR = 12; // upgrade to 400KHz!
@@ -243,7 +244,7 @@ void removeThisMany(int numberOfChars)
 }
 
 //----------------adjusting settings with pontentiometer---------
-#define ADJUST_POT A1
+//set ADJUST_POT in pin_definitions.h
 #define PWM_ADJUST 4
 #define TIMING_ADJUST 5
 void potentiometer(byte mode)
@@ -272,7 +273,7 @@ void potentiometer(byte mode)
 void potReturn(int potValue)
 {
   byte rawNumber = map(potValue,0,1023,0,9);
-  keyOut(rawNumber + 48); // turn the raw number into an ascii one
+  keyOut(rawNumber + 48); // turn the raw number into an ascii number
   hapticMessage(rawNumber + 48); // start feedback
   while(!hapticMessage(MONITOR_MODE)){;} //break loop when letter is finished
   keyOut(BACKSPACE); //key message

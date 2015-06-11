@@ -5,8 +5,8 @@
 #define TRIGRAMTIME  40 //time it takes for a three letter chord to recognize
 #define BIGRAMTIME   50 //weee snaw!
 #define UNIGRAMTIME  70 //time it takes for a single press to be recognised
-//--------- Button pin-out
-byte buttons[] = { 11,10,9,8,7,6,5,4,13,12 };// up to 16 possible
+//--------- Button pin-out as set in pin_definitions.h
+byte buttons[] = { BUTTON_PINOUT };// up to 16 possible
 
 void buttonUp()// it's cold out there, set up the buttons 
 { //  set every button as an input with internal pull-up resistence

@@ -17,18 +17,15 @@ void serialInterfaceUp()
 void keyOut(byte keyPress)
 {
   static boolean terminalMode = false;
-  static boolean practiceMode = false;
   static boolean keyboardMode = true; //default output mode
   if(keyPress == 148){terminalMode = !terminalMode; return;}//t macro
   if(keyPress == 139){keyboardMode = !keyboardMode; return;}//k macro
-  if(keyPress == 'g' + SPACEBAR){practiceMode = !practiceMode; return;}
   
 
   if(keyboardMode){Keyboard.write(keyboardConvert(keyPress));} //defualt op
   else{Serial.write(ttlConvert(keyPress));} //conection via pyserial or debug
 
   if(terminalMode){Serial1.write(ttlConvert(keyPress));}//Yun communication
-  else if(practiceMode){practicePrompt(keyPress);}
 }
 
 void releaseKey()
@@ -61,16 +58,15 @@ void mouseRelease()//be free critter!
   Mouse.release(MIDDLE_CLICK_OUT);
 }
 
+//set x and y in pin_definitions.h
 #define REFRESH_TIME 21 //poll rate of pins
-#define X_AXIS A2        //analog pin used for x
-#define Y_AXIS A3        //analog pin used for y
 #define RANGE 8
 
 //EEPROM data locations
 #define XMIN 0
 #define XMAX 2
 #define YMIN 4
-#define YMAX 6 //was a load of crap
+#define YMAX 6
 #define SESSION_REC 8
 #define SESSION_KEY 61
 void writeReading(int data, byte location)
@@ -96,8 +92,8 @@ void mouseMovement()
   
   if(millis() - time > REFRESH_TIME)
   {//EEPROM the calibration data so it is centered every boot
-    int xReading = analogRead(X_AXIS);
-    int yReading = analogRead(Y_AXIS);
+    int xReading = analogRead(MOUSE_X_PIN);
+    int yReading = analogRead(MOUSE_Y_PIN);
     int xmin = word(EEPROM.read(XMIN),EEPROM.read(XMIN +1));
     int xmax = word(EEPROM.read(XMAX),EEPROM.read(XMAX +1));
     int ymin = word(EEPROM.read(YMIN),EEPROM.read(YMIN +1));
@@ -111,9 +107,11 @@ void mouseMovement()
     {
       char xMapped = map(xReading, xmin, xmax, RANGE, -RANGE);
       char yMapped = map(yReading, ymin, ymax, -RANGE, RANGE);
-      if(abs(yMapped) != 1 && yMapped != 0 && abs(yMapped) != 2 && abs(yMapped) != 3)//if(abs(yMapped)>3){dostuff}
+      if(abs(yMapped) != 1 && yMapped != 0 &&
+           abs(yMapped) != 2 && abs(yMapped) != 3)//if(abs(yMapped)>3){dostuff}
       {Mouse.move(0,yMapped,0);}
-      if(abs(xMapped) != 1 && xMapped != 0 && abs(xMapped) != 2 && abs(xMapped) != 3)
+      if(abs(xMapped) != 1 && xMapped != 0 &&
+           abs(xMapped) != 2 && abs(xMapped) != 3)
       {Mouse.move(xMapped,0,0);}
     }
     time = millis();
@@ -222,73 +220,4 @@ boolean serialBowl(boolean terminalToggle)
   else{printing = false;}
   bowlControl(); //part that keeps the serial in the bowl
   return printing;
-}
-
-void practiceWord()
-{
-
-}
-
-void practicePrompt(byte atemptedLetter)
-{
-  static byte letterInWaiting = 0;
-  
-  if(atemptedLetter == 0xff){letterInWaiting = 0;}
-  else if(atemptedLetter == letterInWaiting)
-  {
-    delayMicroseconds(250);
-    letterInWaiting = Serial1.read();
-    bowlControl();
-    if(letterInWaiting == 0xff){typingPractice();}
-    else if(letterInWaiting == SPACEBAR){patternVibrate(240);}
-    else if(letterInWaiting < 'A'){practicePrompt(letterInWaiting);} 
-    else if(byte valid = charToPattern(letterInWaiting)){patternVibrate(valid);}
-    else{practicePrompt(letterInWaiting);}
-  }
-}
-
-void typingPractice()
-{
-  static boolean practiceMode = false;
-  
-  serialDump();           //remove and existing cruft
-  if(practiceMode)        //exiting practice mode case
-  {
-    pagerActivity(0);     //set pager blocking inactive
-    practicePrompt(0xff); //turn prompt off
-  }
-  else                    //entering practice mode case
-  {
-    pagerActivity(TRIGGER);
-    Serial1.print("cat /mnt/sda1/arduino/alice.txt");
-    serialDump();
-    Serial1.write(NEW_LINE);
-    practicePrompt(0); //call for first prompt
-    //Serial1.write(XOFF);
-    //dumpThis(31); //number of bytes that will be returned?
-  }
-  practiceMode = !practiceMode;
-  keyOut('g' + SPACEBAR);
-}
-
-
-//--------- Performance testing functions ---------------
-
-void pressTime(byte trigger)
-{
-  static unsigned long durration = 0;
-  static byte letter = 0;
-  
-  if(trigger)
-  {
-    durration = millis();
-    letter = trigger;
-  }
-  else
-  {
-    Serial.write(letter);
-    Serial.print(F(" -pressed- "));
-    Serial.println(millis() - durration);
-    durration = 0;
-  }
 }

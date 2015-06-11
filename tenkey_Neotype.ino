@@ -7,6 +7,7 @@
 #include <Wire.h>           //i2c
 #include <EEPROM.h>         //store mouse calibration
 #include "keyDefinitions.h" //define key numbers for various output types
+#include "pin_definitions.h"//Pin arrangements per type of board
 //switch board named file with your board found in "hardwareOptions" folder
 //eg -> yun.ino <-with-> hardwareOptions/uno.ino
 
@@ -35,7 +36,7 @@ void loop()
   feedbackAndRelease();       //controls pager feedback and release control
   messageHandlr(MONITOR_MODE);//handles incoming messages
   listenForMessage();         //grab potential messages over usb serial
-  potentiometer(MONITOR_MODE);//monitor potentiometer for setting adjustment
+  potentiometer(MONITOR_MODE);//monitor potentiometer: pagers.ino 
   mouseMovement();            //monitor joystick for mouse actions
   serialBowl(MONITOR_MODE);   //check: terminal responses
 }
@@ -81,7 +82,6 @@ byte chordLoop()
   }
   else if(pressState)
   {
-    pressTime(pressState); //begin to record time pressed
     actuation = pressState;
     hold = pressState;
   }
@@ -106,7 +106,6 @@ void feedbackAndRelease()
     releaseKey();
     mouseRelease(); //he wants to be free!
     held = false;
-    pressTime(0); //print press durration
   }
   else if(patternToChar(currentState))
   { // if that state is a pattern 
@@ -132,7 +131,6 @@ void macros(byte letter)
     if(recordHandlr(MONITOR_MODE)){;}
     else{messageHandlr(RECORD_CAT);}
   }
-  else if(letter == 'g' + SPACEBAR){typingPractice();}//turn on practice
   else if(letter == 'h' + SPACEBAR){alphaHint();} // play alphabetical hint
   else if(letter == 'i' + SPACEBAR){potentiometer(ADJUST_PWM);}//Toggle to pwm
   else if(letter == 'j' + SPACEBAR){comboPress(LEFT_ALT,0,0);}
