@@ -1,17 +1,17 @@
-/*************************************************** 
+/***************************************************
   This is a library for our Adafruit 16-channel PWM & Servo driver
 
   Pick one up today in the adafruit shop!
   ------> http://www.adafruit.com/products/815
 
-  These displays use I2C to communicate, 2 pins are required to  
+  These displays use I2C to communicate, 2 pins are required to
   interface. For Arduino UNOs, thats SCL -> Analog 5, SDA -> Analog 4
 
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
   products from Adafruit!
 
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  Written by Limor Fried/Ladyada for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
   edited for prettyness: Paul Beaudet
  ****************************************************/
@@ -26,12 +26,9 @@
  #define WIRE Wire1
 #endif
 
-// Set to true to print some debug messages, or false to disable them.
-#define ENABLE_DEBUG_OUTPUT true
-
 Adafruit_PWM::Adafruit_PWM(uint8_t addr) {_i2caddr = addr;}
 
-void Adafruit_PWM::begin(void) 
+void Adafruit_PWM::begin(void)
 {
  WIRE.begin();
  reset();
@@ -39,36 +36,28 @@ void Adafruit_PWM::begin(void)
 
 void Adafruit_PWM::reset(void) {write8(PCA9685_MODE1, 0x0);}
 
-void Adafruit_PWM::setPWMFreq(float freq) 
+void Adafruit_PWM::setPWMFreq(float freq)
 {
   freq *= 0.9;//Correct for overshoot in the frequency setting (see issue #11).
   float prescaleval = 25000000;
   prescaleval /= 4096;
   prescaleval /= freq;
   prescaleval -= 1;
-  if (ENABLE_DEBUG_OUTPUT) 
-  {
-    Serial.print("Estimated pre-scale: "); Serial.println(prescaleval);
-  }
   uint8_t prescale = floor(prescaleval + 0.5);
-  if (ENABLE_DEBUG_OUTPUT) 
-  {
-    Serial.print("Final pre-scale: "); Serial.println(prescale);
-  }
-  
+
   uint8_t oldmode = read8(PCA9685_MODE1);
   uint8_t newmode = (oldmode&0x7F) | 0x10; // sleep
   write8(PCA9685_MODE1, newmode); // go to sleep
   write8(PCA9685_PRESCALE, prescale); // set the prescaler
   write8(PCA9685_MODE1, oldmode);
   delay(5);
-  write8(PCA9685_MODE1, oldmode | 0xa1);  
+  write8(PCA9685_MODE1, oldmode | 0xa1);
   //  This sets the MODE1 register to turn on auto increment.
   // This is why the beginTransmission below was not working.
   //  Serial.print("Mode now 0x"); Serial.println(read8(PCA9685_MODE1), HEX);
 }
 
-void Adafruit_PWM::setPWM(uint8_t num, uint16_t on, uint16_t off) 
+void Adafruit_PWM::setPWM(uint8_t num, uint16_t on, uint16_t off)
 {
   //Serial.print("Setting PWM "); Serial.print(num); Serial.print(": "); Serial.print(on); Serial.print("->"); Serial.println(off);
 
@@ -88,7 +77,7 @@ void Adafruit_PWM::setPin(uint8_t num, uint16_t val, bool invert)
 {
   // Clamp value between 0 and 4095 inclusive.
   val = min(val, 4095);
-  if (invert) 
+  if (invert)
   {
     if      (val == 0)    {setPWM(num, 4096, 0);}
                           // Special value for signal fully on.
@@ -96,7 +85,7 @@ void Adafruit_PWM::setPin(uint8_t num, uint16_t val, bool invert)
                           // Special value for signal fully off.
     else                  {setPWM(num, 0, 4095-val);}
   }
-  else 
+  else
   {
     if      (val == 4095) {setPWM(num, 4096, 0);}
                           // Special value for signal fully on.
@@ -106,7 +95,7 @@ void Adafruit_PWM::setPin(uint8_t num, uint16_t val, bool invert)
   }
 }
 
-uint8_t Adafruit_PWM::read8(uint8_t addr) 
+uint8_t Adafruit_PWM::read8(uint8_t addr)
 {
   WIRE.beginTransmission(_i2caddr);
   WIRE.write(addr);
@@ -116,7 +105,7 @@ uint8_t Adafruit_PWM::read8(uint8_t addr)
   return WIRE.read();
 }
 
-void Adafruit_PWM::write8(uint8_t addr, uint8_t d) 
+void Adafruit_PWM::write8(uint8_t addr, uint8_t d)
 {
   WIRE.beginTransmission(_i2caddr);
   WIRE.write(addr);
