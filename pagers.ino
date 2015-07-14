@@ -10,17 +10,14 @@ Adafruit_PWM pagers = Adafruit_PWM(); // create pagers object
 void pagersUp() // to speed up i2c, go into 'fast 400khz I2C' mode
 {               // might not work when sharing the I2C bus
   pagers.begin();
-  pagers.setPWMFreq(1600);   // 1600 is the maximum PWM frequency
-  uint8_t twbrbackup = TWBR; // save I2C bitrate
-  // must be changed after calling Wire.begin() (inside pwm.begin())
-  TWBR = 12; // upgrade to 400KHz!
-}
+  pagers.setPWMFreq(40); // ? 1600 is the maximum PWM frequency ? says example
+}                        // ? learn.adafuit says 40-1000hz ?
 
 int pagerIntensity(int intensityChange)
 {
   static int intensity = 4095;  // 0 being off and 4095 being most intense
   if(intensityChange){intensity = intensityChange;}
-  else{return intensity;}
+  else{return intensity;} //TODO this function needs work...
 }
 
 void patternVibrate(int pins)
@@ -57,7 +54,7 @@ boolean pagerActivity(byte activityMode)
 boolean hapticMessage(byte letter, int spacing = 0)
 { // updating function; passing a string sets course of action
   static boolean animated = false; // animated or typical letter?
-  static int timing = 150;         // default durration of letter play
+  static int timing = 200;         // default durration of letter play
 
   if(spacing){timing = spacing; return false;} // change timing call
 
@@ -253,7 +250,7 @@ void potentiometer(byte mode)             // Main loop potentiometer check
 
   if(mode == MONITOR_MODE)
   { // check to do adjustments on either intensity or spacing
-    if (intensity) {pagerIntensity(map(potValue, 0, 1023, 0, 4095));}
+    if (intensity) {pagerIntensity(map(potValue, 0, 1023, 1500, 3500));}
     else {hapticMessage(0, map(potValue, 0, 1023, 10, 500));}
   }
   else if (mode == DEFAULT_MODE){potReturn(potValue);} // "flash value"
