@@ -1,7 +1,7 @@
 //conversion.ino- Copyright Paul Beaudet 2014 -See License for reuse info
 //Depends on pgmspace
 #include <avr/pgmspace.h>//explicitly stated read only memory
-//--ANOTHERS layout-- keys a-n-o-t-h-e-r-s make up the homerow 
+//--ANOTHERS layout-- keys a-n-o-t-h-e-r-s make up the homerow
 const byte chordPatterns[] PROGMEM = // alphabetical chord assignment
 // each byte is a series of bits that make up a chord
 { //`,  a,  b,  c,  d,  e,  f,  g,  h,  i,  j,  k,  l,  m,
@@ -25,7 +25,7 @@ const byte spaceParody[] PROGMEM = // space shift posibilities
 
 const byte numberParody[] PROGMEM = // option shift to numbers
 {//`/ A1/ b / c / d / E6/ f / g / H5/ i / j / k / l / m  //38=ampersand
-  47,'1','.','^', 47,'6','<','>','5','9','#','@','-','*',//47=forwardslash 
+  47,'1','.','^', 47,'6','<','>','5','9','#','@','-','*',//47=forwardslash
 // N2/ O3/ p / q / R7/ S8/ T4/ u / v / w / x / y / z / { / | / } /del
   '2','3','+','%','7','8','4','0','"', 39,'x',',','=','{','|','}',TAB_KEY
 };
@@ -41,7 +41,7 @@ boolean convertionMode(boolean toggle) //toggles numbers or letters mode
 #define L_THUMB 256  // int value of key data
 #define R_THUMB 512  // int value of key data
 byte patternToChar(int base) //returns the char value of a raw chord
-{// some convertions can explicitly imediately be returned 
+{// some convertions can explicitly imediately be returned
   if(base == 240){return LEFT_CLICK_IN;}
   if(base == 15){return RIGHT_CLICK_IN;}
   if(base == L_THUMB){return BACKSPACE;}//also:2nd level shift, special chars
@@ -49,11 +49,11 @@ byte patternToChar(int base) //returns the char value of a raw chord
   if(base == 102){return 0;} //number otherwise assigned to del possition
   if(base == (R_THUMB | L_THUMB)){return CARIAGE_RETURN;}
   //combination: space + backspace == Enter
-  
-  for (byte i=0; i<PATTERNSIZE; i++)   
-  {// for all asignments in key mapping   
-    if ( (base & ~(R_THUMB | L_THUMB)) == pgm_read_byte(&chordPatterns[i])) 
-    {//incoming chord ignoring thumbs     check for matching chord 
+
+  for (byte i=0; i<PATTERNSIZE; i++)
+  {// for all asignments in key mapping
+    if ( (base & ~(R_THUMB | L_THUMB)) == pgm_read_byte(&chordPatterns[i]))
+    {//incoming chord ignoring thumbs     check for matching chord
       if (base & R_THUMB)//first level shift *combination with space
       {// 512 = 10-0000-0000 // if( 10th bit is fliped high )
         return pgm_read_byte(&spaceParody[i]);
@@ -68,10 +68,10 @@ byte patternToChar(int base) //returns the char value of a raw chord
 byte heldASCII(byte letter)
 {
   static unsigned long holdTimes = 0;
-  
+
   if(letter){holdTimes++;}
   else{holdTimes = 0;}
-  
+
   if(letter == SPACEBAR)
   {
     if(holdTimes == 30){return BACKSPACE;}
@@ -82,19 +82,19 @@ byte heldASCII(byte letter)
   {
     return 0;
   }
-  
+
   if(holdTimes == 18 && letter > 95){return BACKSPACE;}
   if(holdTimes == 19)// first hold
   {//letters covered by main layout
     if(letter > 95){return letter-SPACEBAR;} //shift cases
-    if(letter == '1'){return 0;} //empty cases return 0 
+    if(letter == '1'){return 0;} //empty cases return 0
     return letter; //outside cases are repeating
   }
   if(holdTimes == 42 && letter > 95){return BACKSPACE;}
-  if(holdTimes == 43) //second hold 
+  if(holdTimes == 43) //second hold
   {//letters covered by main layout
-    if(letter > 95){return letter+SPACEBAR;} //macro cases 
-    if(letter == '1'){return 129;} 
+    if(letter > 95){return letter+SPACEBAR;} //macro cases
+    if(letter == '1'){return 129;}
     return letter; //outside cases are repeating
   }
   if(holdTimes > 43)
@@ -116,7 +116,7 @@ byte doubleToASCII(byte letter)
 
 byte charToPattern(byte letter)
 { // if any of 4 possible parodies line up
-  for (byte i=0; i<PATTERNSIZE; i++)   
+  for (byte i=0; i<PATTERNSIZE; i++)
   {// for all of the key mapping
     if( letter == ('`'+ i) || letter == ('@' + i))//typical letter patterns
     {return pgm_read_byte(&chordPatterns[i]);}    //TODO output shift case
@@ -124,7 +124,7 @@ byte charToPattern(byte letter)
     {return pgm_read_byte(&chordPatterns[i]);}
     if( letter == pgm_read_byte(&numberParody[i]))//numbers parody chords
     {return pgm_read_byte(&chordPatterns[i]);}
-  }// TODO return int with animation signals to differ parodies
+  }
   return 0; // no match case
 }
 
@@ -137,7 +137,7 @@ const byte frameStore[] PROGMEM =
 byte getFrame(byte frame, byte type = 0)
 {  //Default No activity value ***;
   static byte inProgressType = 255; // refers to dementions in the frame store
-  
+
   if      (type == TRIGGER){inProgressType = 255;}//One is the reset signal
   else if(type == SPACEBAR){inProgressType = 0;}//first dimention
   //TODO make room for future animations
