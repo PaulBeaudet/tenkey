@@ -46,7 +46,7 @@ boolean ptimeCheck(uint32_t durration)
 boolean hapticMessage(byte letter, int spacing = 0)
 { // updating function; passing a string sets course of action
   static boolean animated = false; // animated or typical letter?
-  static int timing = 200;         // default durration of letter play
+  static int timing = 400;         // default durration of letter play
 
   if(spacing){timing = spacing; return false;} // change timing call
 
@@ -243,7 +243,7 @@ void potentiometer(byte mode)             // Main loop potentiometer check
   if(mode == MONITOR_MODE)
   { // check to do adjustments on either intensity or spacing
     if (intensity) {pagerIntensity(map(potValue, 0, 1023, 1500, 3500));}
-    else {hapticMessage(0, map(potValue, 0, 1023, 10, 500));}
+    else {hapticMessage(0, map(potValue, 0, 1023, 10, 700));}
   }
   else if (mode == DEFAULT_MODE){potReturn(potValue);} // "flash value"
   else if (mode == ADJUST_PWM)        // intensity mode case
